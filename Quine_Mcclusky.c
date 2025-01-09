@@ -786,12 +786,11 @@ IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_o
         }
     }
     petrick0 = (int *)realloc(petrick0, p_index0*sizeof(int));
-    int p_index;
     
     for (int column = 1; column < num_of_minterms; column++)
     {
         int *general_petrick = (int *)malloc(num_of_terms * sizeof(int));
-        p_index = 0;
+        int p_index = 0;
         for (int row = 0; row < num_of_terms; row++)
         {
             if (prime_implicants_chart[row][column] == 1)
