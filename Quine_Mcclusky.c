@@ -961,10 +961,12 @@ StringNode *get_solution()
     // free(f1.mcclusky_groups);
     StringNode *not_taken = CreateStringNode("");
     StringNode *taken = CreateStringNode("");
+    int not_zero_count;
     for (int i = 1; i < f1.groups_num; i++)
     {
         int last_check = 0;
         // printf("i = %d\n", i);
+        not_zero_count = 0;
         for (int j = 0; j < f1.groups_num - i; j ++)
         {
             if (j == f1.groups_num - i - 1) last_check = 1;
@@ -972,6 +974,7 @@ StringNode *get_solution()
             // printf("combinations[%d][%d].size = %d\n", i - 1, j, combinations[i - 1][j].size);
             // printf("combinations[%d][%d].size = %d\n", i - 1, j + 1, combinations[i - 1][j + 1].size);
             combinations[i][j] = general_comb(combinations[i - 1][j], combinations[i - 1][j + 1], taken, not_taken, last_check);
+            not_zero_count ++;
             // printf("j = %d\n", j);
             // printf("comb%d_%d:\n", j, j + 1);
             // for (int k = 0; k < combinations[i][j].size; k++)
@@ -983,7 +986,7 @@ StringNode *get_solution()
     // PrintStringNodes(not_taken, ' ');
     for (int i = 0; i < f1.groups_num; i++)
     {
-        for (int j = 0; j < f1.groups_num - i; j++)
+        for (int j = 0; j < f1.groups_num - i && j < not_zero_count; j++)
         {
             free(combinations[i][j].combgroup);
             combinations[i][j].combgroup = NULL;
