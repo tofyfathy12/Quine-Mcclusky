@@ -228,7 +228,6 @@ void get_mcclusky_groups(struct function *f)
             group_num++;
     }
     change_groups_num(f, group_num);
-    // printf("f->groups_num = %d\n", f->groups_num);
     f->mcclusky_groups = (char ***)malloc(group_num * sizeof(char **));
     for (int i = 0; i < group_num; i++)
         *(f->mcclusky_groups + i) = (char **)malloc((groups_sizes[i] + 1) * sizeof(char *));
@@ -279,6 +278,7 @@ char *get_variable_name()
     char *name = (char *)malloc(10 * sizeof(char));
     printf("Enter variable name: ");
     fgets(name, 10, stdin);
+    name[strlen(name) - 1] = (name[strlen(name) - 1] == '\n') ? '\0' : '\0';
     return name;
 }
 
@@ -474,7 +474,7 @@ int max(int arr[], int size)
     return maximum;
 }
 
-void remove_dublicates(struct function *f)
+void remove_dublicates(struct function *f) // This works during the get_function() function to remove the dublicated minterms
 {
     int uniques_num = 0;
     int *temp_arr = (int *)calloc(f->size, sizeof(int));
@@ -507,7 +507,7 @@ void remove_dublicates(struct function *f)
     f->size = uniques_num;
 }
 
-void print_mcclusky_groups(struct function f)
+void print_mcclusky_groups(struct function f) // This is for debugging
 {
     char ***groups = f.mcclusky_groups;
     for (int i = 0; i < f.groups_num; i++)
@@ -545,7 +545,7 @@ char *get_full_bin(int var_num, int num)
     return full_bin;
 }
 
-struct combination combine0(const int *g1, const int *g2)
+struct combination combine0(const int *g1, const int *g2) // This function serves nothing to the program
 {
     int size1 = get_length(g1);
     int size2 = get_length(g2);
@@ -583,19 +583,12 @@ struct combination combine0(const int *g1, const int *g2)
 
 struct combination general_comb(struct combination g1, struct combination g2, StringNode *taken_node, StringNode *nottaken_node, int last_combination_of_column)
 {
-    // printf("g1.size = %d\n", g1.size);
-    // printf("g2.size = %d\n", g2.size);
     struct combination combination;
-    // printf("reached here: %d\n", __LINE__);
     int term_length = (g1.size > 0) ? strlen(g1.combgroup[0]) : 0;
-    // printf("reached here: %d\n", __LINE__);
-    // printf("Term Length = %d\n", term_length);
     char **combined = (char **)malloc((g1.size * g2.size) * sizeof(char *));
     for (int i = 0; i < (g1.size * g2.size); i++)
         *(combined + i) = (char *)malloc(term_length * sizeof(char));
-    // printf("reached here: %d\n", __LINE__);
     int combined_index = 0;
-    // printf("g1.size = %d\n", g1.size);
     for (int i = 0; i < g1.size; i++)
     {
         char *bin1 = strdup(*(g1.combgroup + i));
@@ -661,12 +654,8 @@ struct combination general_comb(struct combination g1, struct combination g2, St
             bin1 = NULL;
         }
     }
-    // printf("not taken inside general_comb: ");
-    // PrintStringNodes(nottaken_node, ' ');
-    // printf("taken inside general comb: ");
-    // PrintStringNodes(taken_node, ' ');
     combined = (char **)realloc(combined, combined_index * sizeof(char *));
-    // printf("Result:\n");
+    // printf("Result: ");
     // for (int i = 0; i < combined_index; i++)
     // {
     //     printf("%s ", combined[i]);
@@ -722,19 +711,21 @@ int binary_to_decimal(char *binary)
     return result;
 }
 
-IntArray all_possible_minterms(char *str) // SUSPECT OF THE PROBLEM TO F = m(0, 1, 4, 5, 6, 7)
+IntArray all_possible_minterms(char *str)
 {
     char *temp = strdup(str);
     int count = 0;
-    int ptr = 0;
+    int index_of_char = 0;
     do
     {
-        ptr = strcspn(temp, "_");
-        if (temp[ptr] != '_')
+        index_of_char = strcspn(temp, "_");
+        if (temp[index_of_char] != '_')
             break;
         count++;
-        temp = strdup(temp + 1 + ptr);
-    } while (ptr < strlen(temp));
+        temp = temp + index_of_char + 1;
+        index_of_char = 0;
+    } while (index_of_char < strlen(temp));
+    free(temp);
     int *positions = (int *)malloc(count * sizeof(int));
     int index = 0;
     for (int i = 0; i < strlen(str); i++)
@@ -763,7 +754,7 @@ IntArray all_possible_minterms(char *str) // SUSPECT OF THE PROBLEM TO F = m(0, 
     return arr;
 }
 
-int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **terms, int num_of_terms) // SUSPECT OF THE PROBLEM TO F = m(0, 1, 4, 5, 6, 7)
+int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **terms, int num_of_terms)
 {
     int **prime_implicants_chart = (int **)malloc((num_of_terms) * sizeof(int *));
     for (int i = 0; i < num_of_terms; i++)
@@ -825,17 +816,6 @@ IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_o
             }
         }
         int p_result_new_size = 0;
-        // printf("Before\n");
-        // for (int i = 0; i < p_result_index; i++)
-        // {
-        //     printf("%s ", get_full_bin(num_of_terms, p_result[i]));
-        // }
-        // printf("\n");
-        // for (int i = 0; i < p_result_index; i++)
-        // {
-        //     printf("%d ", p_result[i]);
-        // }
-        // printf("\n");
         for (int i = 0; i < p_result_index; i++)
         {
             for (int j = i + 1; j < p_result_index; j++)
@@ -853,41 +833,21 @@ IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_o
                     p_result_new_size++;
             }
         }
-        // printf("After\n");
-        // for (int i = 0; i < p_result_index; i++)
-        // {
-        //     printf("%s ", get_full_bin(num_of_terms, p_result[i]));
-        // }
-        // printf("\n");
-        // for (int i = 0; i < p_result_index; i++)
-        // {
-        //     printf("%d ", p_result[i]);
-        // }
-        // printf("\n");
         int *p_result2 = (int *)malloc(p_result_new_size * sizeof(int));
         int p_result2_index = 0;
         for (int i = 0; i < p_result_index; i++)
         {
             if (p_result[i] != 0)
             {
-                // printf("p_result[%d] = %d\n", i, p_result[i]);
                 p_result2[p_result2_index] = p_result[i];
-                // printf("p_result2[%d] = %d\n", p_result2_index, p_result2[p_result2_index]);
                 p_result2_index++;
             }
         }
-        // printf("%p\n", p_result2);
-        // petrick0 = (int *)realloc(p_result2, p_result2_index * sizeof(int));
         free(petrick0);
         petrick0 = (int *)malloc(p_result2_index * sizeof(int));
         for (int i = 0; i < p_result2_index; i++)
             petrick0[i] = p_result2[i];
         free(p_result2);
-        // printf("%p\n", petrick0);
-        // for (int i = 0; i < p_result2_index; i++)
-        // {
-        //     printf("petrick0[%d] = %d\n", i, petrick0[i]);
-        // }
         p_index0 = p_result2_index;
         free(general_petrick);
         free(p_result);
@@ -908,17 +868,11 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
     while (terms_head != NULL)
     {
         terms[terms_index] = terms_head->str;
-        // printf("%s\n", terms[terms_index]);
         terms_head = terms_head->next;
         terms_index++;
     }
-    // printf("%d\n", terms_index);
     StringNode *final_functions = CreateStringNode("");
     IntArray petrick = get_petrick(minterms, num_of_minterms, terms, num_of_terms);
-    // for (int i = 0; i < petrick.length; i++)
-    // {
-    //     printf("petrick.array[%d] = %d\n", i, petrick.array[i]);
-    // }
     int min_ones_num = 0;
     for (int i = 0; i < petrick.length; i++)
     {
@@ -934,7 +888,6 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
         else if (ones_num < min_ones_num)
             min_ones_num = ones_num;
     }
-    // printf("min_ones_num = %d\n", min_ones_num);
     for (int i = 0; i < petrick.length; i++)
     {
         char *petrick_bin = get_full_bin(num_of_terms, petrick.array[i]);
@@ -954,7 +907,6 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
         if (petrick.array[i] != 0)
         {
             minimized_petrick[minimized_index] = petrick.array[i];
-            // printf("minimized_petrick[%d] = %d\n", minimized_index, minimized_petrick[minimized_index]);
             minimized_index++;
         }
     }
@@ -979,7 +931,11 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
                     if (f_index == 0)
                         str = strdup(expression);
                     else
+                    {
+                        size_t len = strlen(expression) + strlen(str) + 1;
+                        str = (char *)realloc(str, len * sizeof(char));
                         strcat(str, expression);
+                    }
                     loop_tracker ++;
                     strcat(str, " + ");
                 }
@@ -988,15 +944,22 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
                     if (loop_tracker == 0)
                         str = strdup(expression);
                     else
+                    {
+                        size_t len = strlen(expression) + strlen(str) + 1;
+                        str = (char *)realloc(str, len * sizeof(char));
                         strcat(str, expression);
+                    }
                     loop_tracker ++;
                 }
                 f_index++;
                 free(expression);
+                expression = NULL;
             }
         }
         // printf("str = %s\n", str);
         InsertStringNode(str, final_functions);
+        free(str);
+        str = NULL;
     }
     free(minimized_petrick);
     minimized_petrick = NULL;
@@ -1024,22 +987,13 @@ StringNode *get_solution()
         while (f1.mcclusky_groups[j][size] != 0)
             size++;
         combinations[0][j].size = size;
-        // printf("group%d: ", j);
-        // for (int i = 0; i < size; i++) printf("%s ", combinations[0][j].combgroup[i]);
-        // printf("\n");
     }
-    // for (int i = 0; i < f1.groups_num; i++)
-    // {
-    //     free(f1.mcclusky_groups[i]);
-    // }
-    // free(f1.mcclusky_groups);
     StringNode *not_taken = CreateStringNode("");
     StringNode *taken = CreateStringNode("");
     int not_zero_count;
     for (int i = 1; i < f1.groups_num; i++)
     {
         int last_check = 0;
-        // printf("i = %d\n", i);
         not_zero_count = 0;
         for (int j = 0; j < f1.groups_num - i; j++)
         {
@@ -1051,7 +1005,6 @@ StringNode *get_solution()
             // printf("combinations[%d][%d].size = %d\n", i - 1, j + 1, combinations[i - 1][j + 1].size);
             combinations[i][j] = general_comb(combinations[i - 1][j], combinations[i - 1][j + 1], taken, not_taken, last_check);
             not_zero_count++;
-            // printf("j = %d\n", j);
             // printf("comb%d_%d:\n", j, j + 1);
             // printf("size = %d\n", combinations[i][j].size);
             for (int k = 0; k < combinations[i][j].size; k++)
@@ -1068,11 +1021,6 @@ StringNode *get_solution()
             }
         }
     }
-    // for (int i = 0; i < combinations[f1.groups_num - 1][0].size; i++)
-    // {
-    //     if (!Is_In(combinations[f1.groups_num - 1][0].combgroup[i], not_taken))
-    //         InsertStringNode(combinations[f1.groups_num - 1][0].combgroup[i], not_taken);
-    // }
     // printf("not taken: ");
     // PrintStringNodes(not_taken, ' ');
     // printf("not taken length = %d\n", not_taken->length);
