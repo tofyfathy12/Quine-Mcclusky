@@ -722,7 +722,7 @@ int binary_to_decimal(char *binary)
     return result;
 }
 
-IntArray all_possible_minterms(char *str)
+IntArray all_possible_minterms(char *str) // SUSPECT OF THE PROBLEM TO F = m(0, 1, 4, 5, 6, 7)
 {
     char *temp = strdup(str);
     int count = 0;
@@ -763,7 +763,7 @@ IntArray all_possible_minterms(char *str)
     return arr;
 }
 
-int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **terms, int num_of_terms)
+int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **terms, int num_of_terms) // SUSPECT OF THE PROBLEM TO F = m(0, 1, 4, 5, 6, 7)
 {
     int **prime_implicants_chart = (int **)malloc((num_of_terms) * sizeof(int *));
     for (int i = 0; i < num_of_terms; i++)
