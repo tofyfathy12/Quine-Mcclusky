@@ -376,15 +376,13 @@ void FreeNodes(StringNode **head)
         current = next;
     }
     *head = NULL;
+    
 }
 
 int main()
 {
-    char *terms[6] = {"0_01", "01_1", "011_", "_00_", "_0_0", "__10"};
-    int num_of_terms = 6;
-    int num_of_minterms = 10;
-    int minterms[] = {0, 1, 2, 5, 6, 7, 8, 9, 10, 14};
-    StringNode *functions = get_final_function(minterms, num_of_minterms, terms, num_of_terms);
-    PrintStringNodes(functions, '\n');
-    FreeNodes(&functions);
+    char *expression = "B\'";
+    char *str;
+    str = strdup(expression);
+    printf("%s\n", str);
 }
