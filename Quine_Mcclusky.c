@@ -725,7 +725,8 @@ IntArray all_possible_minterms(char *str)
         count++;
         temp = temp + index_of_char + 1;
         index_of_char = 0;
-    } while (index_of_char < strlen(temp));
+    }
+    while (index_of_char < strlen(temp));
     free(temp);
     int *positions = (int *)malloc(count * sizeof(int));
     int index = 0;
@@ -751,7 +752,7 @@ IntArray all_possible_minterms(char *str)
         free(temp2);
     }
     IntArray arr;
-    arr.array = possibilities;
+    arr.array = (int *)realloc(possibilities, num_of_possibs * sizeof(int));
     arr.length = num_of_possibs;
     return arr;
 }
