@@ -1048,5 +1048,6 @@ StringNode *get_solution()
     StringNode *possible_functions = get_final_functions(f1, not_taken);
     FreeNodes(&taken);
     FreeNodes(&not_taken);
+    free(f1.minterms_arr);
     return possible_functions;
 }
