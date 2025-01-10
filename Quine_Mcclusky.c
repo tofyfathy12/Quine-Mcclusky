@@ -976,7 +976,6 @@ StringNode *get_solution()
     // printf("Mcclusky Groups:\n");
     // print_mcclusky_groups(f1);
     // printf("Groups Num = %d\n", f1.groups_num);
-    int number_of_columns = f1.groups_num;
     struct combination **combinations = (struct combination **)malloc(f1.groups_num * sizeof(struct combination *));
     for (int i = 0; i < f1.groups_num; i++)
         combinations[i] = (struct combination *)malloc((f1.groups_num - i) * sizeof(struct combination));
@@ -1000,8 +999,12 @@ StringNode *get_solution()
         {
             if (j == f1.groups_num - i - 1)
                 last_check = 1;
-            if (combinations[i - 1][j].size == 0 && combinations[i - 1][j + 1].size == 0)
-                break;
+            if (combinations[i - 1][j].size == 0 && combinations[i - 1][j + 1].size == 0) // The Error happens here
+            {
+                combinations[i][j].combgroup = (char **)malloc(sizeof(char *));
+                combinations[i][j].size = 0;
+                continue;
+            }
             // printf("combinations[%d][%d].size = %d\n", i - 1, j, combinations[i - 1][j].size);
             // printf("combinations[%d][%d].size = %d\n", i - 1, j + 1, combinations[i - 1][j + 1].size);
             combinations[i][j] = general_comb(combinations[i - 1][j], combinations[i - 1][j + 1], taken, not_taken, last_check);
