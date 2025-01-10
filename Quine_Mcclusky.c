@@ -937,6 +937,8 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
                         strcat(str, expression);
                     }
                     loop_tracker ++;
+                    size_t len = strlen(str) + 4;
+                    str = (char *)realloc(str, len * sizeof(char));
                     strcat(str, " + ");
                 }
                 else
@@ -971,10 +973,10 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
 StringNode *get_solution()
 {
     struct function f1 = get_function();
-    // print_struct(f1);
-    // printf("Mcclusky Groups:\n");
-    // print_mcclusky_groups(f1);
-    // printf("Groups Num = %d\n", f1.groups_num);
+    print_struct(f1);
+    printf("Mcclusky Groups:\n");
+    print_mcclusky_groups(f1);
+    printf("Groups Num = %d\n", f1.groups_num);
     int number_of_columns = f1.groups_num;
     struct combination **combinations = (struct combination **)malloc(f1.groups_num * sizeof(struct combination *));
     for (int i = 0; i < f1.groups_num; i++)
@@ -1021,11 +1023,11 @@ StringNode *get_solution()
             }
         }
     }
-    // printf("not taken: ");
-    // PrintStringNodes(not_taken, ' ');
-    // printf("not taken length = %d\n", not_taken->length);
-    // printf("taken: ");
-    // PrintStringNodes(taken, ' ');
+    printf("not taken: ");
+    PrintStringNodes(not_taken, ' ');
+    printf("not taken length = %d\n", not_taken->length);
+    printf("taken: ");
+    PrintStringNodes(taken, ' ');
     for (int i = 0; i < f1.groups_num; i++)
     {
         for (int j = 0; j < f1.groups_num - i && j < not_zero_count; j++)
