@@ -567,6 +567,7 @@ struct combination combine0(const int *g1, const int *g2) // This function serve
                 new_comb[index] = '_';
                 *(combined + combined_index) = new_comb;
                 combined_index++;
+                free(new_comb);
             }
             free(bin2);
             bin2 = NULL;
@@ -747,6 +748,7 @@ IntArray all_possible_minterms(char *str)
             temp2[positions[j]] = possib_bin[j];
         }
         possibilities[i] = binary_to_decimal(temp2);
+        free(temp2);
     }
     IntArray arr;
     arr.array = possibilities;
@@ -772,6 +774,7 @@ int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **term
                 }
         free(possibs.array);
         possibs.array = NULL;
+        free(str);
     }
     return prime_implicants_chart;
 }
