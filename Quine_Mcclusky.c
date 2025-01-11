@@ -138,6 +138,7 @@ int RemoveStringNode(char *str, StringNode *head)
     if (strcmp(before_node->str, str) == 0)
     {
         *head = *node;
+        free(before_node->str);
         free(before_node);
         before_node = NULL;
         return 1;
