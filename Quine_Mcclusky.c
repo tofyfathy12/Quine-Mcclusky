@@ -139,6 +139,7 @@ int RemoveStringNode(char *str, StringNode *head)
     {
         *head = *node;
         free(before_node->str);
+        before_node->next = NULL;
         free(before_node);
         before_node = NULL;
         return 1;
@@ -149,6 +150,7 @@ int RemoveStringNode(char *str, StringNode *head)
         {
             before_node->next = node->next;
             free(node->str);
+            node->next = NULL;
             free(node);
             node = NULL;
             return 1;
@@ -166,6 +168,7 @@ void FreeNodes(StringNode **head)
     {
         StringNode *next = current->next;
         free(current->str);
+        current->next = NULL;
         free(current);
         current = next;
     }
@@ -567,6 +570,7 @@ struct combination combine0(const int *g1, const int *g2) // This function serve
                 *(combined + combined_index) = new_comb;
                 combined_index++;
                 free(new_comb);
+                new_comb = NULL;
             }
             free(bin2);
             bin2 = NULL;
@@ -855,6 +859,9 @@ IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_o
         free(general_petrick);
         free(p_result);
     }
+    for (int i = 0; i < num_of_terms; i++)
+        free(prime_implicants_chart[i]);
+    free(prime_implicants_chart);
     IntArray petrick;
     petrick.array = petrick0;
     petrick.length = p_index0;
@@ -902,6 +909,8 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
         }
         if (ones_num != min_ones_num)
             petrick.array[i] = 0;
+        free(petrick_bin);
+        petrick_bin = NULL;
     }
     int *minimized_petrick = (int *)malloc(petrick.length * sizeof(int));
     int minimized_index = 0;
@@ -964,6 +973,8 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
         InsertStringNode(str, final_functions);
         free(str);
         str = NULL;
+        free(petrick_bin);
+        petrick_bin = NULL;
     }
     free(minimized_petrick);
     minimized_petrick = NULL;
@@ -1035,8 +1046,12 @@ StringNode *get_solution()
     // PrintStringNodes(taken, ' ');
     for (int i = 0; i < f1.groups_num; i++)
     {
-        for (int j = 0; j < f1.groups_num - i && j < not_zero_count; j++)
+        for (int j = 0; j < f1.groups_num - i && j < not_zero_count; j++) // j < f1.groups_num - i && j < not_zero_count
         {
+            for (int k = 0; k < combinations[i][j].size; k++)
+            {
+                free(combinations[i][j].combgroup[k]);
+            }
             free(combinations[i][j].combgroup);
             combinations[i][j].combgroup = NULL;
         }
@@ -1045,6 +1060,16 @@ StringNode *get_solution()
     }
     free(combinations);
     combinations = NULL;
+    for (int i = 0; i < f1.groups_num; i++)
+    { 
+        int j = 0;
+        while (f1.mcclusky_groups[i][j] != NULL)
+        {
+            free(f1.mcclusky_groups[i][j]);
+            j ++;
+        }
+        free(f1.mcclusky_groups[i]);
+    }
     StringNode *possible_functions = get_final_functions(f1, not_taken);
     FreeNodes(&taken);
     FreeNodes(&not_taken);
