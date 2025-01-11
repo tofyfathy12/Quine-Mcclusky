@@ -246,7 +246,7 @@ void get_mcclusky_groups(struct function *f)
                 element_index++;
             }
         }
-        *(*(f->mcclusky_groups + i) + element_index) = 0; // last element to be null-terminator \0
+        *(*(f->mcclusky_groups + i) + element_index) = NULL; // last element to be NULL
         // printf("mcclusky_groups[%d][%d] = %s\n", i, element_index, *(*(f->mcclusky_groups + i) + element_index));
         min_ones_count++;
         if (element_index > 0)
@@ -513,15 +513,13 @@ void print_mcclusky_groups(struct function f) // This is for debugging
     for (int i = 0; i < f.groups_num; i++)
     {
         int element_index = 0;
-        int num = (int)*(*(groups + i) + element_index);
-        if (num != 0)
+        char *numinbin = *(*(groups + i) + element_index);
+        if (numinbin != NULL)
             printf("group%d:\n", i);
-        while (num != 0)
+        while (numinbin != NULL)
         {
-            char *numinbin = *(*(groups + i) + element_index);
             printf("%d : %s\n", binary_to_decimal(numinbin), numinbin);
             element_index++;
-            num = (int)*(*(groups + i) + element_index);
         }
     }
 }
