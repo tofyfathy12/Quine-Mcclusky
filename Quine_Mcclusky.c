@@ -355,27 +355,62 @@ char digit_to_char(int num)
 struct function get_function()
 {
     struct function f;
+    start:
     f.size = 0;
-    f.minterms_arr = (int *)malloc(1 * sizeof(int));
-    int num;
-    get_int("Enter minterm (-1 to stop): ", &num);
+    // f.minterms_arr = (int *)malloc(1 * sizeof(int));
+    // int num;
+    // get_int("Enter minterm (-1 to stop): ", &num);
+    char minterms_input[1000];
+    printf("Enter comma seperated minterms e.g.(0, 1, 2, ...): ");
+    fgets(minterms_input, 1000, stdin);
+    // if (minterms_input[strlen(minterms_input) - 1] == '\n') minterms_input[strlen(minterms_input) - 1] = '\0';
+    for (int i = 0; i < strlen(minterms_input); i++)
+        if (minterms_input[i] == ',') f.size++;
+    
+    f.size++;
+    f.minterms_arr = (int *)malloc(f.size * sizeof(int));
     int i = 0;
-    if (num == -1)
-        f.minterms_arr = (int *)realloc(f.minterms_arr, f.size * sizeof(int));
-    while (num != -1)
+    char *delim = ", \n";
+    char *temp;
+    temp = strtok(minterms_input, delim);
+    while (temp != NULL && i < f.size)
     {
-        if (num < 0)
+        f.minterms_arr[i] = atoi(temp);
+        if (f.minterms_arr[i] < 0)
         {
-            printf("Minterms can't be negative !!\n");
-            get_int("Enter minterm (-1 to stop): ", &num);
-            continue;
+            printf("ERROR: Negative Minterm\n");
+            printf("Try Again\n");
+            free(f.minterms_arr);
+            f.minterms_arr = NULL;
+            goto start;
         }
-        f.size++;
-        f.minterms_arr = (int *)realloc(f.minterms_arr, f.size * sizeof(int));
-        *(f.minterms_arr + i) = num;
+        temp = strtok(NULL, delim);
         i++;
-        get_int("Enter minterm (-1 to stop): ", &num);
     }
+    if (temp != NULL)
+    {
+        printf("INPUT ERROR !!");
+        printf("Try Again.\n");
+        free(f.minterms_arr);
+        f.minterms_arr = NULL;
+        goto start;
+    }
+    // if (num == -1)
+    //     f.minterms_arr = (int *)realloc(f.minterms_arr, f.size * sizeof(int));
+    // while (num != -1)
+    // {
+    //     if (num < 0)
+    //     {
+    //         printf("Minterms can't be negative !!\n");
+    //         get_int("Enter minterm (-1 to stop): ", &num);
+    //         continue;
+    //     }
+    //     f.size++;
+    //     f.minterms_arr = (int *)realloc(f.minterms_arr, f.size * sizeof(int));
+    //     *(f.minterms_arr + i) = num;
+    //     i++;
+    //     get_int("Enter minterm (-1 to stop): ", &num);
+    // }
     remove_dublicates(&f);
     get_mcclusky_groups(&f);
     return f;
@@ -586,7 +621,9 @@ struct combination general_comb(struct combination g1, struct combination g2, St
 {
     struct combination combination;
     int term_length = (g1.size > 0) ? strlen(g1.combgroup[0]) : 0;
-    char **combined = (char **)malloc((g1.size * g2.size) * sizeof(char *));
+    char **combined = NULL;
+    if ((g2.size * g2.size) > 0)
+        combined = (char **)malloc((g1.size * g2.size) * sizeof(char *));
     int combined_index = 0;
     for (int i = 0; i < g1.size; i++)
     {
@@ -651,7 +688,16 @@ struct combination general_comb(struct combination g1, struct combination g2, St
             bin1 = NULL;
         }
     }
-    combined = (char **)realloc(combined, combined_index * sizeof(char *));
+    if (combined_index > 0)
+        combined = (char **)realloc(combined, combined_index * sizeof(char *));
+    else
+    {
+        if (combined != NULL)
+        {
+            free(combined);
+            combined = NULL;
+        }
+    }
     // printf("Result: ");
     // for (int i = 0; i < combined_index; i++)
     // {
@@ -995,33 +1041,22 @@ StringNode *get_solution()
 
     for (int j = 0; j < f1.groups_num; j++)
     {
-        combinations[0][j].combgroup = f1.mcclusky_groups[j];
         int size = 0;
         while (f1.mcclusky_groups[j][size] != NULL)
             size++;
         combinations[0][j].size = size;
+        combinations[0][j].combgroup = (char **)realloc(f1.mcclusky_groups[j], size * sizeof(char *));
     }
     StringNode *not_taken = CreateStringNode("");
     StringNode *taken = CreateStringNode("");
-    int not_zero_count;
     for (int i = 1; i < f1.groups_num; i++)
     {
         int last_check = 0;
-        not_zero_count = 0;
         for (int j = 0; j < f1.groups_num - i; j++)
         {
             if (j == f1.groups_num - i - 1)
                 last_check = 1;
-            if (combinations[i - 1][j].size == 0 && combinations[i - 1][j + 1].size == 0) // The Error happens here
-            {
-                // combinations[i][j].combgroup = (char **)malloc(sizeof(char *));
-                combinations[i][j].size = 0;
-                continue;
-            }
-            // printf("combinations[%d][%d].size = %d\n", i - 1, j, combinations[i - 1][j].size);
-            // printf("combinations[%d][%d].size = %d\n", i - 1, j + 1, combinations[i - 1][j + 1].size);
             combinations[i][j] = general_comb(combinations[i - 1][j], combinations[i - 1][j + 1], taken, not_taken, last_check);
-            not_zero_count++;
             // printf("comb%d_%d:\n", j, j + 1);
             // printf("size = %d\n", combinations[i][j].size);
             for (int k = 0; k < combinations[i][j].size; k++)
@@ -1045,31 +1080,21 @@ StringNode *get_solution()
     // PrintStringNodes(taken, ' ');
     for (int i = 0; i < f1.groups_num; i++)
     {
-        for (int j = 0; j < f1.groups_num - i && j < not_zero_count; j++) // j < f1.groups_num - i && j < not_zero_count
+        for (int j = 0; j < f1.groups_num - i; j++)
         {
-            for (int k = 0; k < combinations[i][j].size; k++)
+            if (combinations[i][j].combgroup != NULL)
             {
-                free(combinations[i][j].combgroup[k]);
+                for (int k = 0; k < combinations[i][j].size; k++)
+                    free(combinations[i][j].combgroup[k]);
+                free(combinations[i][j].combgroup);
+                combinations[i][j].combgroup = NULL;
             }
-            free(combinations[i][j].combgroup);
-            combinations[i][j].combgroup = NULL;
         }
         free(combinations[i]);
         combinations[i] = NULL;
     }
     free(combinations);
     combinations = NULL;
-    for (int i = 0; i < f1.groups_num; i++)
-    { 
-        int j = 0;
-        while (f1.mcclusky_groups[i][j] != NULL)
-        {
-            free(f1.mcclusky_groups[i][j]);
-            j ++;
-        }
-        free(f1.mcclusky_groups[i][j]);
-        free(f1.mcclusky_groups[i]);
-    }
     free(f1.mcclusky_groups);
     StringNode *possible_functions = get_final_functions(f1, not_taken);
     FreeNodes(&taken);
