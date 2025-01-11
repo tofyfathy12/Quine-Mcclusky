@@ -302,6 +302,7 @@ char *get_expression(const char *binary)
     int alpha_index = 0;
     int exp_index = 0;
     char temp;
+    int underscores = 0;
     while (i < strlen(binary))
     {
         temp = alphabet[alpha_index % strlen(alphabet)];
@@ -316,8 +317,15 @@ char *get_expression(const char *binary)
             expression[exp_index] = temp;
             exp_index++;
         }
+        else if (binary[i] == '_')
+            underscores ++;
         alpha_index++;
         i++;
+    }
+    if (underscores == strlen(binary) && exp_index == 0)
+    {
+        expression[0] = '1';
+        expression = (char *)realloc(expression, 2 * sizeof(char));
     }
     return expression;
 }
@@ -1031,10 +1039,10 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
 StringNode *get_solution()
 {
     struct function f1 = get_function();
-    // print_struct(f1);
-    // printf("Mcclusky Groups:\n");
-    // print_mcclusky_groups(f1);
-    // printf("Groups Num = %d\n", f1.groups_num);
+    print_struct(f1);
+    printf("Mcclusky Groups:\n");
+    print_mcclusky_groups(f1);
+    printf("Groups Num = %d\n", f1.groups_num);
     struct combination **combinations = (struct combination **)malloc(f1.groups_num * sizeof(struct combination *));
     for (int i = 0; i < f1.groups_num; i++)
         combinations[i] = (struct combination *)malloc((f1.groups_num - i) * sizeof(struct combination));
@@ -1049,6 +1057,15 @@ StringNode *get_solution()
     }
     StringNode *not_taken = CreateStringNode("");
     StringNode *taken = CreateStringNode("");
+    if (f1.groups_num == 1)
+    {
+        int j = 0;
+        while (f1.mcclusky_groups[0][j] != NULL)
+        {
+            InsertStringNode(f1.mcclusky_groups[0][j], not_taken);
+            j ++;
+        }
+    }
     for (int i = 1; i < f1.groups_num; i++)
     {
         int last_check = 0;
@@ -1073,11 +1090,11 @@ StringNode *get_solution()
             }
         }
     }
-    // printf("not taken: ");
-    // PrintStringNodes(not_taken, ' ');
-    // printf("not taken length = %d\n", not_taken->length);
-    // printf("taken: ");
-    // PrintStringNodes(taken, ' ');
+    printf("not taken: ");
+    PrintStringNodes(not_taken, ' ');
+    printf("not taken length = %d\n", not_taken->length);
+    printf("taken: ");
+    PrintStringNodes(taken, ' ');
     for (int i = 0; i < f1.groups_num; i++)
     {
         for (int j = 0; j < f1.groups_num - i; j++)
