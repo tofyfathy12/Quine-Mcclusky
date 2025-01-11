@@ -47,7 +47,6 @@ void get_mcclusky_groups(struct function *f);
 int min(const int *arr, int size);
 void print_arr(const int *arr);
 int count(const int *arr, int size, int number);
-void change_groups_num(struct function *f, int new_value);
 void remove_dublicates(struct function *f);
 void print_mcclusky_groups(struct function f);
 int max(int arr[], int size);
@@ -220,25 +219,24 @@ void get_mcclusky_groups(struct function *f)
     // printf("min ones count = %d\n", min_ones_count);
     int temp = min_ones_count;
     int elements_taken = 0;
-    int group_num = 0;
+    f->groups_num = 0;
     int *groups_sizes = (int *)malloc((max_var_num + 1) * sizeof(int));
     while (elements_taken < f->size)
     {
         int ones_count = count(ones_counts, f->size, temp);
         elements_taken += ones_count;
-        groups_sizes[group_num] = ones_count;
+        groups_sizes[f->groups_num] = ones_count;
         temp++;
-        if (groups_sizes[group_num] > 0)
-            group_num++;
+        if (groups_sizes[f->groups_num] > 0)
+            f->groups_num++;
     }
-    change_groups_num(f, group_num);
-    f->mcclusky_groups = (char ***)malloc(group_num * sizeof(char **));
-    for (int i = 0; i < group_num; i++)
+    f->mcclusky_groups = (char ***)malloc(f->groups_num * sizeof(char **));
+    for (int i = 0; i < f->groups_num; i++)
         *(f->mcclusky_groups + i) = (char **)malloc((groups_sizes[i] + 1) * sizeof(char *));
     free(groups_sizes);
     groups_sizes = NULL;
     int i = 0;
-    while (i < group_num)
+    while (i < f->groups_num)
     {
         int element_index = 0;
         for (int j = 0; j < f->size; j++)
@@ -250,7 +248,7 @@ void get_mcclusky_groups(struct function *f)
                 element_index++;
             }
         }
-        *(*(f->mcclusky_groups + i) + element_index) = NULL; // last element to be NULL
+        *(*(f->mcclusky_groups + i) + element_index) = NULL; // last element to be null-terminator (\0)
         // printf("mcclusky_groups[%d][%d] = %s\n", i, element_index, *(*(f->mcclusky_groups + i) + element_index));
         min_ones_count++;
         if (element_index > 0)
@@ -465,11 +463,6 @@ int count(const int *arr, int size, int number)
     return result;
 }
 
-void change_groups_num(struct function *f, int new_value)
-{
-    f->groups_num = new_value;
-}
-
 int max(int arr[], int size)
 {
     int maximum = arr[0];
@@ -524,6 +517,7 @@ void print_mcclusky_groups(struct function f) // This is for debugging
         {
             printf("%d : %s\n", binary_to_decimal(numinbin), numinbin);
             element_index++;
+            numinbin = *(*(groups + i) + element_index);
         }
     }
 }
@@ -897,6 +891,8 @@ StringNode *get_final_functions(struct function f, StringNode *terms_head)
             min_ones_num = ones_num;
         else if (ones_num < min_ones_num)
             min_ones_num = ones_num;
+        free(petrick_bin);
+        petrick_bin = NULL;
     }
     for (int i = 0; i < petrick.length; i++)
     {
@@ -1068,6 +1064,7 @@ StringNode *get_solution()
             free(f1.mcclusky_groups[i][j]);
             j ++;
         }
+        free(f1.mcclusky_groups[i][j]);
         free(f1.mcclusky_groups[i]);
     }
     StringNode *possible_functions = get_final_functions(f1, not_taken);
