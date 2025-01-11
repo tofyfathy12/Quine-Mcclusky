@@ -91,7 +91,10 @@ void InsertStringNode(char *str, StringNode *head)
 {
     StringNode *node = head;
     if (strcmp(head->str, "") == 0)
+    {
+        free(head->str);
         head->str = strdup(str);
+    }
     else
     {
         head->length += 1;
@@ -711,7 +714,8 @@ int binary_to_decimal(char *binary)
 
 IntArray all_possible_minterms(char *str)
 {
-    char *temp = strdup(str);
+    char temp[strlen(str) + 1];
+    strcpy(temp, str);
     int count = 0;
     int index_of_char = 0;
     do
@@ -720,11 +724,10 @@ IntArray all_possible_minterms(char *str)
         if (temp[index_of_char] != '_')
             break;
         count++;
-        temp = temp + index_of_char + 1;
+        strcpy(temp, temp + index_of_char + 1);
         index_of_char = 0;
     }
     while (index_of_char < strlen(temp));
-    free(temp);
     int *positions = (int *)malloc(count * sizeof(int));
     int index = 0;
     for (int i = 0; i < strlen(str); i++)
@@ -746,8 +749,12 @@ IntArray all_possible_minterms(char *str)
             temp2[positions[j]] = possib_bin[j];
         }
         possibilities[i] = binary_to_decimal(temp2);
+        free(possib_bin);
+        possib_bin = NULL;
         free(temp2);
+        temp2 = NULL;
     }
+    free(positions);
     IntArray arr;
     arr.array = (int *)realloc(possibilities, num_of_possibs * sizeof(int));
     arr.length = num_of_possibs;
@@ -994,7 +1001,7 @@ StringNode *get_solution()
     {
         combinations[0][j].combgroup = f1.mcclusky_groups[j];
         int size = 0;
-        while (f1.mcclusky_groups[j][size] != 0)
+        while (f1.mcclusky_groups[j][size] != NULL)
             size++;
         combinations[0][j].size = size;
     }
@@ -1011,7 +1018,7 @@ StringNode *get_solution()
                 last_check = 1;
             if (combinations[i - 1][j].size == 0 && combinations[i - 1][j + 1].size == 0) // The Error happens here
             {
-                combinations[i][j].combgroup = (char **)malloc(sizeof(char *));
+                // combinations[i][j].combgroup = (char **)malloc(sizeof(char *));
                 combinations[i][j].size = 0;
                 continue;
             }
@@ -1067,6 +1074,7 @@ StringNode *get_solution()
         free(f1.mcclusky_groups[i][j]);
         free(f1.mcclusky_groups[i]);
     }
+    free(f1.mcclusky_groups);
     StringNode *possible_functions = get_final_functions(f1, not_taken);
     FreeNodes(&taken);
     FreeNodes(&not_taken);
