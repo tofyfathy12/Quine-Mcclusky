@@ -766,7 +766,7 @@ IntArray all_possible_minterms(char *str)
         if (temp[index_of_char] != '_')
             break;
         count++;
-        strcpy(temp, temp + index_of_char + 1);
+        memmove(temp, temp + index_of_char + 1, strlen(temp + index_of_char + 1) + 1);
         index_of_char = 0;
     }
     while (index_of_char < strlen(temp));
