@@ -587,8 +587,6 @@ struct combination general_comb(struct combination g1, struct combination g2, St
     struct combination combination;
     int term_length = (g1.size > 0) ? strlen(g1.combgroup[0]) : 0;
     char **combined = (char **)malloc((g1.size * g2.size) * sizeof(char *));
-    for (int i = 0; i < (g1.size * g2.size); i++)
-        *(combined + i) = (char *)malloc(term_length * sizeof(char));
     int combined_index = 0;
     for (int i = 0; i < g1.size; i++)
     {
@@ -607,12 +605,10 @@ struct combination general_comb(struct combination g1, struct combination g2, St
                     RemoveStringNode(bin1, nottaken_node);
                 }
                 int index = index_of_difference(bin1, bin2);
-                char *new_comb = strdup(bin1);
-                new_comb[index] = '_';
-                *(combined + combined_index) = new_comb;
+                combined[combined_index] = strdup(bin1);
+                combined[combined_index][index] = '_';
                 combined_index++;
             }
-
             free(bin2);
             bin2 = NULL;
         }
