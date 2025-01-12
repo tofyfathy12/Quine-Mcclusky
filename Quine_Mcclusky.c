@@ -371,7 +371,12 @@ struct function get_function()
     char minterms_input[1000];
     printf("Enter comma seperated minterms e.g.(0, 1, 2, ...): ");
     fgets(minterms_input, 1000, stdin);
-    // if (minterms_input[strlen(minterms_input) - 1] == '\n') minterms_input[strlen(minterms_input) - 1] = '\0';
+    if (minterms_input[0] == '\n')
+    {
+        printf("INPUT ERROR !!\n");
+        printf("Try Again\n");
+        goto start;
+    }
     for (int i = 0; i < strlen(minterms_input); i++)
         if (minterms_input[i] == ',') f.size++;
     
@@ -403,22 +408,6 @@ struct function get_function()
         f.minterms_arr = NULL;
         goto start;
     }
-    // if (num == -1)
-    //     f.minterms_arr = (int *)realloc(f.minterms_arr, f.size * sizeof(int));
-    // while (num != -1)
-    // {
-    //     if (num < 0)
-    //     {
-    //         printf("Minterms can't be negative !!\n");
-    //         get_int("Enter minterm (-1 to stop): ", &num);
-    //         continue;
-    //     }
-    //     f.size++;
-    //     f.minterms_arr = (int *)realloc(f.minterms_arr, f.size * sizeof(int));
-    //     *(f.minterms_arr + i) = num;
-    //     i++;
-    //     get_int("Enter minterm (-1 to stop): ", &num);
-    // }
     remove_dublicates(&f);
     get_mcclusky_groups(&f);
     return f;
@@ -519,35 +508,28 @@ int max(int arr[], int size)
 
 void remove_dublicates(struct function *f) // This works during the get_function() function to remove the dublicated minterms
 {
-    int uniques_num = 0;
-    int *temp_arr = (int *)calloc(f->size, sizeof(int));
-    *(temp_arr + 0) = *(f->minterms_arr + 0);
-    uniques_num++;
-    for (int i = 1; i < f->size; i++)
-        *(temp_arr + i) = 0;
-    for (int i = 1; i < f->size; i++)
+    int freq_arr_size = max(f->minterms_arr, f->size) + 1;
+    int freq_arr[freq_arr_size];
+    memset(freq_arr, 0, freq_arr_size * sizeof(int));
+    int new_size = 0;
+    for (int i = 0; i < f->size; i++)
     {
-        int counter = 0;
-        for (int j = 1; j < f->size; j++)
+        freq_arr[f->minterms_arr[i]]++;
+        if (freq_arr[f->minterms_arr[i]] == 1) new_size++;
+    }
+    int *new_arr = (int *)malloc(new_size * sizeof(int));
+    int new_arr_index = 0;
+    for (int i = 0; i < freq_arr_size; i++)
+    {
+        if (freq_arr[i] > 0)
         {
-            if (*(f->minterms_arr + i) == *(temp_arr + j))
-            {
-                counter++;
-                break;
-            }
-        }
-        if (counter == 0)
-        {
-            *(temp_arr + uniques_num) = *(f->minterms_arr + i);
-            uniques_num++;
+            new_arr[new_arr_index] = i;
+            new_arr_index++;
         }
     }
-    for (int i = 0; i < uniques_num; i++)
-        *(f->minterms_arr + i) = *(temp_arr + i);
-    free(temp_arr);
-    temp_arr = NULL;
-    f->minterms_arr = (int *)realloc(f->minterms_arr, uniques_num * sizeof(int));
-    f->size = uniques_num;
+    free(f->minterms_arr);
+    f->minterms_arr = (int *)realloc(new_arr, new_arr_index * sizeof(int));
+    f->size = new_arr_index;
 }
 
 void print_mcclusky_groups(struct function f) // This is for debugging
@@ -891,13 +873,14 @@ IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_o
                     p_result_new_size++;
             }
         }
-        int *p_result2 = (int *)malloc(p_result_new_size * sizeof(int));
+        int *p_result2 = (int *)malloc(p_result_index * sizeof(int));
         int p_result2_index = 0;
         for (int i = 0; i < p_result_index; i++)
         {
             if (p_result[i] != 0)
             {
-                p_result2[p_result2_index] = p_result[i];
+                int num = p_result[i];
+                p_result2[p_result2_index] = num;
                 p_result2_index++;
             }
         }
