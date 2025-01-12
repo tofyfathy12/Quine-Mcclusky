@@ -11,6 +11,7 @@ struct function
     int size;
     int groups_num;
     char ***mcclusky_groups;
+    int number_of_variables;
 };
 
 struct combination
@@ -45,7 +46,6 @@ char **get_variables();
 int ones_count(int number);
 void get_mcclusky_groups(struct function *f);
 int min(const int *arr, int size);
-void print_arr(const int *arr);
 int count(const int *arr, int size, int number);
 void remove_dublicates(struct function *f);
 void print_mcclusky_groups(struct function f);
@@ -206,10 +206,11 @@ int ones_count(int number)
 
 void get_mcclusky_groups(struct function *f)
 {
-    int maximum = max(f->minterms_arr, f->size);
-    int max_var_num = 0;
-    while ((1 << max_var_num) <= maximum)
-        max_var_num++;
+    // int maximum = max(f->minterms_arr, f->size);
+    // int max_var_num = 0;
+    // while ((1 << max_var_num) <= maximum)
+    //     max_var_num++;
+    int max_var_num = f->number_of_variables;
     // printf("Max Variables number = %d\n", max_var_num);
     int ones_counts[f->size];
     for (int i = 0; i < f->size; i++)
@@ -364,10 +365,8 @@ struct function get_function()
 {
     struct function f;
     start:
+    f.number_of_variables = get_variables_num();
     f.size = 0;
-    // f.minterms_arr = (int *)malloc(1 * sizeof(int));
-    // int num;
-    // get_int("Enter minterm (-1 to stop): ", &num);
     char minterms_input[1000];
     printf("Enter comma seperated minterms e.g.(0, 1, 2, ...): ");
     fgets(minterms_input, 1000, stdin);
@@ -391,7 +390,15 @@ struct function get_function()
         f.minterms_arr[i] = atoi(temp);
         if (f.minterms_arr[i] < 0)
         {
-            printf("ERROR: Negative Minterm\n");
+            printf("ERROR: Negative Minterm !!\n");
+            printf("Try Again\n");
+            free(f.minterms_arr);
+            f.minterms_arr = NULL;
+            goto start;
+        }
+        else if (f.minterms_arr[i] >= (1 << f.number_of_variables))
+        {
+            printf("ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
             printf("Try Again\n");
             free(f.minterms_arr);
             f.minterms_arr = NULL;
@@ -475,17 +482,6 @@ void print_struct(struct function f)
 {
     for (int i = 0; i < f.size; i++)
         printf("%d ", f.minterms_arr[i]);
-    printf("\n");
-}
-
-void print_arr(const int *arr)
-{
-    int i = 0;
-    while (*(arr + i) != -1)
-    {
-        printf("%d ", *(arr + i));
-        i++;
-    }
     printf("\n");
 }
 
@@ -602,7 +598,6 @@ struct combination combine0(const int *g1, const int *g2) // This function serve
     }
     combined = (char **)realloc(combined, combined_index * sizeof(char *));
     comb1.combgroup = combined;
-    // int num_of_groups = combined_index;
     comb1.size = combined_index;
     return comb1;
 }
@@ -688,12 +683,6 @@ struct combination general_comb(struct combination g1, struct combination g2, St
             combined = NULL;
         }
     }
-    // printf("Result: ");
-    // for (int i = 0; i < combined_index; i++)
-    // {
-    //     printf("%s ", combined[i]);
-    // }
-    // printf("\n");
     combination.combgroup = combined;
     combination.size = combined_index;
     return combination;
