@@ -1058,7 +1058,6 @@ StringNode *get_solution()
                 last_check = 1;
             combinations[i][j] = general_comb(combinations[i - 1][j], combinations[i - 1][j + 1], taken, not_taken, last_check);
             // printf("comb%d_%d:\n", j, j + 1);
-            // printf("size = %d\n", combinations[i][j].size);
             for (int k = 0; k < combinations[i][j].size; k++)
             {
                 if (i == f1.groups_num - 1 && j == f1.groups_num - i - 1)
