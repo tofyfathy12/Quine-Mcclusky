@@ -206,21 +206,12 @@ int ones_count(int number)
 
 void get_mcclusky_groups(struct function *f)
 {
-    // int maximum = max(f->minterms_arr, f->size);
-    // int max_var_num = 0;
-    // while ((1 << max_var_num) <= maximum)
-    //     max_var_num++;
     int max_var_num = f->number_of_variables;
-    // printf("Max Variables number = %d\n", max_var_num);
     int ones_counts[f->size];
     for (int i = 0; i < f->size; i++)
-    {
         ones_counts[i] = ones_count(f->minterms_arr[i]);
-        // printf("Number of ones in %d = %d\n", f->minterms_arr[i], ones_counts[i]);
-    }
 
     int min_ones_count = min(ones_counts, f->size);
-    // printf("min ones count = %d\n", min_ones_count);
     int temp = min_ones_count;
     int elements_taken = 0;
     f->groups_num = 0;
@@ -248,12 +239,10 @@ void get_mcclusky_groups(struct function *f)
             if (ones_counts[j] == min_ones_count)
             {
                 *(*(f->mcclusky_groups + i) + element_index) = get_full_bin(max_var_num, f->minterms_arr[j]);
-                // printf("mcclusky_groups[%d][%d] = %s\n", i, element_index, *(*(f->mcclusky_groups + i) + element_index));
                 element_index++;
             }
         }
         *(*(f->mcclusky_groups + i) + element_index) = NULL; // last element to be null-terminator (\0)
-        // printf("mcclusky_groups[%d][%d] = %s\n", i, element_index, *(*(f->mcclusky_groups + i) + element_index));
         min_ones_count++;
         if (element_index > 0)
             i++;
@@ -297,26 +286,43 @@ int get_variables_num()
 
 char *get_expression(const char *binary)
 {
-    int size = (int)strlen(binary) * 2 + 1;
+    int size = (int)strlen(binary) * 3 + 1;
     char *expression = (char *)calloc(size, sizeof(char));
     int i = 0;
     int alpha_index = 0;
     int exp_index = 0;
     char temp;
     int underscores = 0;
+    int excess = 0;
     while (i < strlen(binary))
     {
+        excess = alpha_index / 26;
         temp = alphabet[alpha_index % strlen(alphabet)];
         if (binary[i] == '0')
         {
             expression[exp_index] = temp;
-            expression[exp_index + 1] = '\'';
-            exp_index += 2;
+            if (excess > 0)
+            {
+                expression[exp_index + 1] = digit_to_char(excess);
+                expression[exp_index + 2] = '\'';
+                exp_index += 3;
+            }
+            else
+            {
+                expression[exp_index + 1] = '\'';
+                exp_index += 2;
+            }
         }
         else if (binary[i] == '1')
         {
             expression[exp_index] = temp;
-            exp_index++;
+            if (excess > 0)
+            {
+                expression[exp_index + 1] = digit_to_char(excess);
+                exp_index += 2;
+            }
+            else
+                exp_index++;
         }
         else if (binary[i] == '_')
             underscores ++;
@@ -326,8 +332,10 @@ char *get_expression(const char *binary)
     if (underscores == strlen(binary) && exp_index == 0)
     {
         expression[0] = '1';
-        expression = (char *)realloc(expression, 2 * sizeof(char));
+        exp_index = 2;
     }
+    expression = (char *)realloc(expression, exp_index * sizeof(char));
+    expression[exp_index - 1] = '\0';
     return expression;
 }
 
@@ -565,7 +573,7 @@ char *get_full_bin(int var_num, int num)
     return full_bin;
 }
 
-struct combination combine0(const int *g1, const int *g2) // This function serves nothing to the program
+struct combination combine0(const int *g1, const int *g2) // This function serves nothing to the program and I'm thinking of deleting it
 {
     int size1 = get_length(g1);
     int size2 = get_length(g2);
