@@ -332,10 +332,10 @@ char *get_expression(const char *binary)
     if (underscores == strlen(binary) && exp_index == 0)
     {
         expression[0] = '1';
-        exp_index = 2;
+        exp_index = 1;
     }
-    expression = (char *)realloc(expression, exp_index * sizeof(char));
-    expression[exp_index - 1] = '\0';
+    expression = (char *)realloc(expression, (exp_index + 1) * sizeof(char));
+    expression[exp_index] = '\0';
     return expression;
 }
 
@@ -1039,12 +1039,8 @@ StringNode *get_solution()
     StringNode *taken = CreateStringNode("");
     if (f1.groups_num == 1)
     {
-        int j = 0;
-        while (f1.mcclusky_groups[0][j] != NULL)
-        {
-            InsertStringNode(f1.mcclusky_groups[0][j], not_taken);
-            j ++;
-        }
+        for (int i = 0; i < combinations[0][0].size; i++)
+            InsertStringNode(combinations[0][0].combgroup[i], not_taken);
     }
     for (int i = 1; i < f1.groups_num; i++)
     {
