@@ -8,9 +8,11 @@
 struct function
 {
     int *minterms_arr;
-    int size;
-    int groups_num;
+    int *dontcares;
     char ***mcclusky_groups;
+    int size;
+    int dontcares_size;
+    int groups_num;
     int number_of_variables;
 };
 
@@ -22,15 +24,15 @@ struct combination
 
 typedef struct StringNode
 {
-    int length;
     char *str;
     struct StringNode *next;
+    int length;
 } StringNode;
 
 typedef struct IntArray
 {
-    int length;
     int *array;
+    int length;
 } IntArray;
 
 void get_int(char *str, int *n);
@@ -66,7 +68,7 @@ int RemoveStringNode(char *str, StringNode *head);
 IntArray all_possible_minterms(char *str);
 int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **terms, int num_of_terms);
 IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_of_terms);
-StringNode *get_final_functions(struct function f, StringNode *terms_head);
+StringNode *get_final_functions(struct function *f, StringNode *terms_head);
 void FreeNodes(StringNode **head);
 StringNode *get_solution();
 
@@ -372,58 +374,179 @@ char digit_to_char(int num)
 struct function get_function()
 {
     struct function f;
+    int minput = 1;
+    int ask_for_dontcares = 1;
+    do
+    {
+        f.number_of_variables = get_variables_num();
+        if (f.number_of_variables <= 0)
+        {
+            printf("ERROR: Number of Variables Can't Be Negative or 0 !!\n");
+            printf("Try Again\n");
+        }
+        else if (f.number_of_variables > 64)
+        {
+            printf("ERROR: Allowed limit of Number of Variables Exceeded !!\n");
+            printf("Try Again\n");
+        }
+    } while (f.number_of_variables <= 0 || f.number_of_variables > 64);
+    int freq_arr[1 << f.number_of_variables];
+    memset(freq_arr, 0, (1 << f.number_of_variables) * sizeof(int));
     start:
-    f.number_of_variables = get_variables_num();
-    f.size = 0;
-    char minterms_input[1000];
-    printf("Enter comma seperated minterms e.g.(0, 1, 2, ...): ");
-    fgets(minterms_input, 1000, stdin);
-    if (minterms_input[0] == '\n')
+    if (minput)
     {
-        printf("INPUT ERROR !!\n");
-        printf("Try Again\n");
-        goto start;
+        f.size = 0;
+        char minterms_input[1000];
+        printf("Enter Comma Seperated Minterms e.g.(0, 1, 2, ...): ");
+        fgets(minterms_input, 1000, stdin);
+        if (minterms_input[0] == '\n')
+        {
+            printf("INPUT ERROR !!\n");
+            printf("Try Again\n");
+            goto start;
+        }
+        for (int i = 0; i < strlen(minterms_input); i++)
+            if (minterms_input[i] == ',') f.size++;
+        
+        f.size++;
+        f.minterms_arr = (int *)malloc(f.size * sizeof(int));
+        int i = 0;
+        char *delim = ", \n";
+        char *temp;
+        temp = strtok(minterms_input, delim);
+        while (temp != NULL && i < f.size)
+        {
+            f.minterms_arr[i] = atoi(temp);
+            if (f.minterms_arr[i] < 0)
+            {
+                printf("ERROR: Negative Minterm !!\n");
+                printf("Try Again\n");
+                free(f.minterms_arr);
+                f.minterms_arr = NULL;
+                goto start;
+            }
+            else if (f.minterms_arr[i] >= (1 << f.number_of_variables))
+            {
+                printf("ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
+                printf("Try Again\n");
+                free(f.minterms_arr);
+                f.minterms_arr = NULL;
+                goto start;
+            }
+            freq_arr[f.minterms_arr[i]]++;
+            temp = strtok(NULL, delim);
+            i++;
+        }
+        if (temp != NULL)
+        {
+            printf("INPUT ERROR !!");
+            printf("Try Again.\n");
+            free(f.minterms_arr);
+            f.minterms_arr = NULL;
+            goto start;
+        }
     }
-    for (int i = 0; i < strlen(minterms_input); i++)
-        if (minterms_input[i] == ',') f.size++;
+    else
+    {
+        f.dontcares_size = 0;
+        char dontcares_input[1000];
+        printf("Enter Comma Seperated Don't-Cares e.g.(0, 1, 2, ...): ");
+        fgets(dontcares_input, 1000, stdin);
+        if (dontcares_input[0] == '\n')
+        {
+            printf("INPUT ERROR !!\n");
+            printf("Try Again\n");
+            goto start;
+        }
+        for (int i = 0; i < strlen(dontcares_input); i++)
+            if (dontcares_input[i] == ',') f.dontcares_size++;
+        
+        f.dontcares_size++;
+        f.dontcares = (int *)malloc(f.dontcares_size * sizeof(int));
+        int i = 0;
+        char *delim = ", \n";
+        char *temp;
+        temp = strtok(dontcares_input, delim);
+        while (temp != NULL && i < f.dontcares_size)
+        {
+            f.dontcares[i] = atoi(temp);
+            if (f.dontcares[i] < 0)
+            {
+                printf("ERROR: Negative Don't-Care !!\n");
+                printf("Try Again\n");
+                free(f.dontcares);
+                f.dontcares = NULL;
+                goto start;
+            }
+            else if (f.dontcares[i] >= (1 << f.number_of_variables))
+            {
+                printf("ERROR: Maximum Don't-Care Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
+                printf("Try Again\n");
+                free(f.dontcares);
+                f.dontcares = NULL;
+                goto start;
+            }
+            else if (freq_arr[f.dontcares[i]] > 0)
+            {
+                printf("ERROR: Minterm Found Among Don't-Cares !!\n");
+                printf("Try Again\n");
+                free(f.dontcares);
+                f.dontcares = NULL;
+                goto start;
+            }
+            temp = strtok(NULL, delim);
+            i++;
+        }
+        if (temp != NULL)
+        {
+            printf("INPUT ERROR !!");
+            printf("Try Again.\n");
+            free(f.dontcares);
+            f.dontcares = NULL;
+            goto start;
+        }
+    }
     
-    f.size++;
-    f.minterms_arr = (int *)malloc(f.size * sizeof(int));
-    int i = 0;
-    char *delim = ", \n";
-    char *temp;
-    temp = strtok(minterms_input, delim);
-    while (temp != NULL && i < f.size)
+    char dont_cares[1000];
+    if (ask_for_dontcares)
     {
-        f.minterms_arr[i] = atoi(temp);
-        if (f.minterms_arr[i] < 0)
+        dontcares:
+        printf("Do You Want to Add don't-cares ? [Y / n] ");
+        fgets(dont_cares, 1000, stdin);
+        if (dont_cares[strlen(dont_cares) - 1] == '\n') dont_cares[strlen(dont_cares) - 1] = '\0';
+        if (strlen(dont_cares) != 1)
         {
-            printf("ERROR: Negative Minterm !!\n");
-            printf("Try Again\n");
-            free(f.minterms_arr);
-            f.minterms_arr = NULL;
+            printf("INPUT ERROR: Try Again\n");
+            goto dontcares;
+        }
+        ask_for_dontcares = 0;
+        if (tolower(dont_cares[0]) == 'n')
+        {
+            f.dontcares = NULL;
+            f.dontcares_size = 0;
+        }
+        else if (tolower(dont_cares[0]) == 'y')
+        {
+            minput = 0;
             goto start;
         }
-        else if (f.minterms_arr[i] >= (1 << f.number_of_variables))
+        else
         {
-            printf("ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
+            printf("ERROR: Invalid Option\n");
             printf("Try Again\n");
-            free(f.minterms_arr);
-            f.minterms_arr = NULL;
-            goto start;
+            goto dontcares;
         }
-        temp = strtok(NULL, delim);
-        i++;
     }
-    if (temp != NULL)
-    {
-        printf("INPUT ERROR !!");
-        printf("Try Again.\n");
-        free(f.minterms_arr);
-        f.minterms_arr = NULL;
-        goto start;
-    }
+
     remove_dublicates(&f);
+    f.minterms_arr = (int *)realloc(f.minterms_arr, (f.size + f.dontcares_size) * sizeof(int));
+    if (f.minterms_arr == NULL)
+    {
+        printf("ERROR Reallocating Memory in Line %d\n", __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    memmove(f.minterms_arr + f.size, f.dontcares, f.dontcares_size * sizeof(int));
+    f.size += f.dontcares_size;
     get_mcclusky_groups(&f);
     return f;
 }
@@ -534,6 +657,31 @@ void remove_dublicates(struct function *f) // This works during the get_function
     free(f->minterms_arr);
     f->minterms_arr = (int *)realloc(new_arr, new_arr_index * sizeof(int));
     f->size = new_arr_index;
+    if (f->dontcares_size > 0)
+    {
+        int freq_arr_size = max(f->dontcares, f->dontcares_size) + 1;
+        int freq_arr[freq_arr_size];
+        memset(freq_arr, 0, freq_arr_size * sizeof(int));
+        int new_size = 0;
+        for (int i = 0; i < f->dontcares_size; i++)
+        {
+            freq_arr[f->dontcares[i]]++;
+            if (freq_arr[f->dontcares[i]] == 1) new_size++;
+        }
+        int *new_arr = (int *)malloc(new_size * sizeof(int));
+        int new_arr_index = 0;
+        for (int i = 0; i < freq_arr_size; i++)
+        {
+            if (freq_arr[i] > 0)
+            {
+                new_arr[new_arr_index] = i;
+                new_arr_index++;
+            }
+        }
+        free(f->dontcares);
+        f->dontcares = (int *)realloc(new_arr, new_arr_index * sizeof(int));
+        f->dontcares_size = new_arr_index;
+    }
 }
 
 void print_mcclusky_groups(struct function f) // This is for debugging
@@ -723,10 +871,10 @@ int index_of_difference(const char *bin1, const char *bin2)
         if (*(bin1 + i) != *(bin2 + i))
         {
             index = i;
-            break;
+            return index;
         }
     }
-    return index;
+    return -1;
 }
 
 int binary_to_decimal(char *binary)
@@ -899,10 +1047,13 @@ IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_o
     return petrick;
 }
 
-StringNode *get_final_functions(struct function f, StringNode *terms_head)
+StringNode *get_final_functions(struct function *f, StringNode *terms_head)
 {
-    int *minterms = f.minterms_arr;
-    int num_of_minterms = f.size;
+    f->minterms_arr = (int *)realloc(f->minterms_arr, (f->size - f->dontcares_size) * sizeof(int));
+    f->size -= f->dontcares_size;
+
+    int *minterms = f->minterms_arr;
+    int num_of_minterms = f->size;
     int num_of_terms = terms_head->length;
     char **terms = (char **)malloc(num_of_minterms * sizeof(char *));
     int terms_index = 0;
@@ -1088,9 +1239,10 @@ StringNode *get_solution()
     free(combinations);
     combinations = NULL;
     free(f1.mcclusky_groups);
-    StringNode *possible_functions = get_final_functions(f1, not_taken);
+    StringNode *possible_functions = get_final_functions(&f1, not_taken);
     FreeNodes(&taken);
     FreeNodes(&not_taken);
     free(f1.minterms_arr);
+    free(f1.dontcares);
     return possible_functions;
 }
