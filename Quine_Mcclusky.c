@@ -1055,7 +1055,7 @@ StringNode *get_final_functions(struct function *f, StringNode *terms_head)
     int *minterms = f->minterms_arr;
     int num_of_minterms = f->size;
     int num_of_terms = terms_head->length;
-    char **terms = (char **)malloc(num_of_minterms * sizeof(char *));
+    char **terms = (char **)malloc(num_of_terms * sizeof(char *));
     int terms_index = 0;
     while (terms_head != NULL)
     {
