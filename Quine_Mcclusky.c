@@ -1183,42 +1183,42 @@ StringNode *get_final_functions(struct function *f, StringNode *terms_head)
 
 StringNode *get_solution()
 {
-    struct function f1 = get_function();
-    // print_struct(f1);
+    struct function boolean_function = get_function();
+    // print_struct(boolean_function);
     // printf("Mcclusky Groups:\n");
-    // print_mcclusky_groups(f1);
-    // printf("Groups Num = %d\n", f1.groups_num);
-    struct combination **combinations = (struct combination **)malloc(f1.groups_num * sizeof(struct combination *));
-    for (int i = 0; i < f1.groups_num; i++)
-        combinations[i] = (struct combination *)malloc((f1.groups_num - i) * sizeof(struct combination));
+    // print_mcclusky_groups(boolean_function);
+    // printf("Groups Num = %d\n", boolean_function.groups_num);
+    struct combination **combinations = (struct combination **)malloc(boolean_function.groups_num * sizeof(struct combination *));
+    for (int i = 0; i < boolean_function.groups_num; i++)
+        combinations[i] = (struct combination *)malloc((boolean_function.groups_num - i) * sizeof(struct combination));
 
-    for (int j = 0; j < f1.groups_num; j++)
+    for (int j = 0; j < boolean_function.groups_num; j++)
     {
         int size = 0;
-        while (f1.mcclusky_groups[j][size] != NULL)
+        while (boolean_function.mcclusky_groups[j][size] != NULL)
             size++;
         combinations[0][j].size = size;
-        combinations[0][j].combgroup = (char **)realloc(f1.mcclusky_groups[j], size * sizeof(char *));
+        combinations[0][j].combgroup = (char **)realloc(boolean_function.mcclusky_groups[j], size * sizeof(char *));
     }
     StringNode *not_taken = CreateStringNode("");
     StringNode *taken = CreateStringNode("");
-    if (f1.groups_num == 1)
+    if (boolean_function.groups_num == 1)
     {
         for (int i = 0; i < combinations[0][0].size; i++)
             InsertStringNode(combinations[0][0].combgroup[i], not_taken);
     }
-    for (int i = 1; i < f1.groups_num; i++)
+    for (int i = 1; i < boolean_function.groups_num; i++)
     {
         int last_check = 0;
-        for (int j = 0; j < f1.groups_num - i; j++)
+        for (int j = 0; j < boolean_function.groups_num - i; j++)
         {
-            if (j == f1.groups_num - i - 1)
+            if (j == boolean_function.groups_num - i - 1)
                 last_check = 1;
             combinations[i][j] = general_comb(combinations[i - 1][j], combinations[i - 1][j + 1], taken, not_taken, last_check);
             // printf("comb%d_%d:\n", j, j + 1);
             for (int k = 0; k < combinations[i][j].size; k++)
             {
-                if (i == f1.groups_num - 1 && j == f1.groups_num - i - 1)
+                if (i == boolean_function.groups_num - 1 && j == boolean_function.groups_num - i - 1)
                 {
                     if (!Is_In(combinations[i][j].combgroup[k], not_taken))
                     {
@@ -1235,9 +1235,9 @@ StringNode *get_solution()
     // printf("not taken length = %d\n", not_taken->length);
     // printf("taken: ");
     // PrintStringNodes(taken, ' ');
-    for (int i = 0; i < f1.groups_num; i++)
+    for (int i = 0; i < boolean_function.groups_num; i++)
     {
-        for (int j = 0; j < f1.groups_num - i; j++)
+        for (int j = 0; j < boolean_function.groups_num - i; j++)
         {
             if (combinations[i][j].combgroup != NULL)
             {
@@ -1252,11 +1252,11 @@ StringNode *get_solution()
     }
     free(combinations);
     combinations = NULL;
-    free(f1.mcclusky_groups);
-    StringNode *possible_functions = get_final_functions(&f1, not_taken);
+    free(boolean_function.mcclusky_groups);
+    StringNode *possible_functions = get_final_functions(&boolean_function, not_taken);
     FreeNodes(&taken);
     FreeNodes(&not_taken);
-    free(f1.minterms_arr);
-    free(f1.dontcares);
+    free(boolean_function.minterms_arr);
+    free(boolean_function.dontcares);
     return possible_functions;
 }
