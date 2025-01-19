@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 #define alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ALPHA_LENGTH 26
+#define MAX_VARIABLES 64
 
 struct function
 {
@@ -288,7 +290,8 @@ int get_variables_num()
 
 char *get_expression(const char *binary)
 {
-    int size = (int)strlen(binary) * 3 + 1;
+    int binary_length = strlen(binary);
+    int size = binary_length * 3 + 1;
     char *expression = (char *)calloc(size, sizeof(char));
     int i = 0;
     int alpha_index = 0;
@@ -296,10 +299,10 @@ char *get_expression(const char *binary)
     char temp;
     int underscores = 0;
     int excess = 0;
-    while (i < strlen(binary))
+    while (i < binary_length)
     {
-        excess = alpha_index / 26;
-        temp = alphabet[alpha_index % strlen(alphabet)];
+        excess = alpha_index / ALPHA_LENGTH;
+        temp = alphabet[alpha_index % ALPHA_LENGTH];
         if (binary[i] == '0')
         {
             expression[exp_index] = temp;
@@ -331,7 +334,7 @@ char *get_expression(const char *binary)
         alpha_index++;
         i++;
     }
-    if (underscores == strlen(binary) && exp_index == 0)
+    if (underscores == binary_length && exp_index == 0)
     {
         expression[0] = '1';
         exp_index = 1;
@@ -384,12 +387,12 @@ struct function get_function()
             printf("ERROR: Number of Variables Can't Be Negative or 0 !!\n");
             printf("Try Again\n");
         }
-        else if (f.number_of_variables > 64)
+        else if (f.number_of_variables > MAX_VARIABLES)
         {
             printf("ERROR: Allowed limit of Number of Variables Exceeded !!\n");
             printf("Try Again\n");
         }
-    } while (f.number_of_variables <= 0 || f.number_of_variables > 64);
+    } while (f.number_of_variables <= 0 || f.number_of_variables > MAX_VARIABLES);
     int freq_arr[1 << f.number_of_variables];
     memset(freq_arr, 0, (1 << f.number_of_variables) * sizeof(int));
     start:
@@ -513,8 +516,13 @@ struct function get_function()
         dontcares:
         printf("Do You Want to Add don't-cares ? [Y / n] ");
         fgets(dont_cares, 1000, stdin);
-        if (dont_cares[strlen(dont_cares) - 1] == '\n') dont_cares[strlen(dont_cares) - 1] = '\0';
-        if (strlen(dont_cares) != 1)
+        int dont_cares_length = strlen(dont_cares);
+        if (dont_cares[dont_cares_length - 1] == '\n')
+        {
+            dont_cares[dont_cares_length - 1] = '\0';
+            dont_cares_length--;
+        }
+        if (dont_cares_length != 1)
         {
             printf("INPUT ERROR: Try Again\n");
             goto dontcares;
@@ -582,15 +590,20 @@ void get_int(char *str, int *n)
     {
         printf("%s", str);
         fgets(input, 1000, stdin);
-        input[strlen(input) - 1] = '\0';
-        if (strlen(input) == 0)
+        int input_length = strlen(input);
+        if (input[input_length - 1] == '\n')
+        {
+            input[input_length - 1] = '\0';
+            input_length--;
+        }
+        if (input_length == 0)
         {
             printf("!!! Invalid Input !!!\n");
             printf("    Try Again\n");
             continue;
         }
         bool notdouble = false;
-        for (int i = 0; i < strlen(input); i++)
+        for (int i = 0; i < input_length; i++)
         {
             if (!(isdigit(input[i]) || (input[i] == '-' && i == 0)))
             {
@@ -891,7 +904,8 @@ int binary_to_decimal(char *binary)
 
 IntArray all_possible_minterms(char *str)
 {
-    char temp[strlen(str) + 1];
+    int str_length = strlen(str);
+    char temp[str_length + 1];
     strcpy(temp, str);
     int count = 0;
     int index_of_char = 0;
@@ -907,7 +921,7 @@ IntArray all_possible_minterms(char *str)
     while (index_of_char < strlen(temp));
     int *positions = (int *)malloc(count * sizeof(int));
     int index = 0;
-    for (int i = 0; i < strlen(str); i++)
+    for (int i = 0; i < str_length; i++)
     {
         if (str[i] == '_')
         {
