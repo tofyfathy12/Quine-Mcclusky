@@ -1,3 +1,4 @@
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -6,6 +7,8 @@
 #define alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define ALPHA_LENGTH 26
 #define MAX_VARIABLES 64
+
+FILE *logs;
 
 struct function
 {
@@ -38,7 +41,7 @@ typedef struct IntArray
 } IntArray;
 
 void get_int(char *str, int *n);
-struct function get_function();
+struct function get_function(char *minterms, char *dontcares, int vars_num, GtkLabel *label);
 void delete_buffer();
 void print_struct(struct function f);
 char get_char(char *str, char *letter);
@@ -72,14 +75,92 @@ int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **term
 IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_of_terms);
 StringNode *get_final_functions(struct function *f, StringNode *terms_head);
 void FreeNodes(StringNode **head);
-StringNode *get_solution();
+StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkLabel *label);
+void on_activate(GtkApplication *app, gpointer user_data);
+void show_possible_functions(GtkButton *button, gpointer user_data);
 
-int main()
+int main(int argc, char *argv[])
+{   
+    logs = fopen("logs.txt", "a+");
+    GtkApplication *app;
+    int status;
+
+    app = gtk_application_new("com.example.fixedlayout", 0);
+
+    
+
+    g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
+
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+
+    g_object_unref(app);
+
+    // StringNode *solution = get_solution();
+    // printf("Possible Functions:\n");
+    // PrintStringNodes(solution, '\n');
+    // FreeNodes(&solution);
+
+    return status;
+}
+
+void show_possible_functions(GtkButton *button, gpointer user_data)
 {
-    StringNode *solution = get_solution();
-    printf("Possible Functions:\n");
-    PrintStringNodes(solution, '\n');
+    GtkBuilder *builder = GTK_BUILDER(user_data);
+
+    GtkEntry *minterms_entry, *dontcares_entry;
+    GtkSpinButton *vars_num_spinbutton;
+    GtkLabel *possible_functions_label;
+
+    minterms_entry = GTK_ENTRY(gtk_builder_get_object(builder, "minterms_entry"));
+    dontcares_entry = GTK_ENTRY(gtk_builder_get_object(builder, "dontcares_entry"));
+    vars_num_spinbutton = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "vars_num_spinbutton"));
+    possible_functions_label = GTK_LABEL(gtk_builder_get_object(builder, "possible_functions"));
+
+    char *minterms = (char *)g_strdup(gtk_entry_get_text(minterms_entry));
+    char *dontcares = (char *)g_strdup(gtk_entry_get_text(dontcares_entry));
+    int vars_num = (int)gtk_spin_button_get_value_as_int(vars_num_spinbutton);
+
+    StringNode *solution = get_solution(minterms, dontcares, vars_num, possible_functions_label);
+    g_free((gchar *)minterms);
+    g_free((gchar *)dontcares);
+    gchar *result = "";
+    while (solution != NULL)
+    {
+        gchar *temp;
+        temp = solution->str;
+        result = g_strconcat(result, temp, NULL);
+        result = g_strconcat(result, "\n", NULL);
+        solution = solution->next;
+    }
+    gtk_label_set_text(possible_functions_label, result);
+    g_free(result);
     FreeNodes(&solution);
+}
+
+void on_activate(GtkApplication *app, gpointer user_data)
+{
+    GtkBuilder *builder;
+    GError *Error = NULL;
+    GtkWidget *window;
+    GtkButton *calculation_button;
+
+    builder = gtk_builder_new();
+    if (!gtk_builder_add_from_file(builder, "main.glade", &Error))
+    {
+        g_printerr("Error loading Glade file: %s\n", Error->message);
+        g_clear_error(&Error);
+    }
+
+    window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+    gtk_application_add_window(app, GTK_WINDOW(window));
+
+    calculation_button = GTK_BUTTON(gtk_builder_get_object(builder, "calculation_button"));
+
+    g_signal_connect(calculation_button, "clicked", G_CALLBACK(show_possible_functions), g_object_ref(builder));
+
+    gtk_widget_show_all(window);
+
+    g_object_unref(builder);
 }
 
 StringNode *CreateStringNode(char *str)
@@ -116,9 +197,9 @@ void PrintStringNodes(StringNode *head, char seperator)
     while (node != NULL)
     {
         if (node->next == NULL)
-            printf("%s\n", node->str);
+            fprintf(logs, "%s\n", node->str);
         else
-            printf("%s%c", node->str, seperator);
+            fprintf(logs, "%s%c", node->str, seperator);
         node = node->next;
     }
 }
@@ -374,183 +455,197 @@ char digit_to_char(int num)
     return letter;
 }
 
-struct function get_function()
+struct function get_function(char *minterms, char *dontcares, int vars_num, GtkLabel *label)
 {
     struct function f;
     int minput = 1;
     int ask_for_dontcares = 1;
-    do
-    {
-        f.number_of_variables = get_variables_num();
-        if (f.number_of_variables <= 0)
-        {
-            printf("ERROR: Number of Variables Can't Be Negative or 0 !!\n");
-            printf("Try Again\n");
-        }
-        else if (f.number_of_variables > MAX_VARIABLES)
-        {
-            printf("ERROR: Allowed limit of Number of Variables Exceeded !!\n");
-            printf("Try Again\n");
-        }
-    } while (f.number_of_variables <= 0 || f.number_of_variables > MAX_VARIABLES);
+    f.number_of_variables = vars_num;
     int freq_arr[1 << f.number_of_variables];
     memset(freq_arr, 0, (1 << f.number_of_variables) * sizeof(int));
-    start:
-    if (minput)
+    minterms:
+    f.size = 0;
+    if (strcmp(minterms, "") == 0)
     {
-        f.size = 0;
-        char minterms_input[1000];
-        printf("Enter Comma Seperated Minterms e.g.(0, 1, 2, ...): ");
-        fgets(minterms_input, 1000, stdin);
-        if (minterms_input[0] == '\n')
+        f.minterms_arr = NULL;
+        f.dontcares = NULL;
+        f.mcclusky_groups = NULL;
+        f.dontcares_size = 0;
+        f.groups_num = 0;
+        f.number_of_variables = 0;
+        return f;
+    }
+    char *minterms_input = strdup(minterms);
+    // printf("Enter Comma Seperated Minterms e.g.(0, 1, 2, ...): ");
+    // fgets(minterms_input, 1000, stdin);
+    if (minterms_input[0] == '\n')
+    {
+        fprintf(logs, "INPUT ERROR !!\n");
+        fprintf(logs, "Try Again\n");
+    }
+    for (int i = 0; i < strlen(minterms_input); i++)
+        if (minterms_input[i] == ',') f.size++;
+    
+    f.size++;
+    f.minterms_arr = (int *)malloc(f.size * sizeof(int));
+    int i = 0;
+    char *delim = ", \n";
+    char *temp;
+    temp = strtok(minterms_input, delim);
+    while (temp != NULL && i < f.size)
+    {
+        int num_of_digits = 0;
+        for (int i = 0; i < strlen(temp); i++)
+            if (isdigit(temp[i]))
+                num_of_digits++;
+
+        if (num_of_digits == 0)
         {
-            printf("INPUT ERROR !!\n");
-            printf("Try Again\n");
-            goto start;
-        }
-        for (int i = 0; i < strlen(minterms_input); i++)
-            if (minterms_input[i] == ',') f.size++;
-        
-        f.size++;
-        f.minterms_arr = (int *)malloc(f.size * sizeof(int));
-        int i = 0;
-        char *delim = ", \n";
-        char *temp;
-        temp = strtok(minterms_input, delim);
-        while (temp != NULL && i < f.size)
-        {
-            f.minterms_arr[i] = atoi(temp);
-            if (f.minterms_arr[i] < 0)
-            {
-                printf("ERROR: Negative Minterm !!\n");
-                printf("Try Again\n");
-                free(f.minterms_arr);
-                f.minterms_arr = NULL;
-                goto start;
-            }
-            else if (f.minterms_arr[i] >= (1 << f.number_of_variables))
-            {
-                printf("ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
-                printf("Try Again\n");
-                free(f.minterms_arr);
-                f.minterms_arr = NULL;
-                goto start;
-            }
-            freq_arr[f.minterms_arr[i]]++;
-            temp = strtok(NULL, delim);
-            i++;
-        }
-        if (temp != NULL)
-        {
-            printf("INPUT ERROR !!");
-            printf("Try Again.\n");
+            temp = NULL;
             free(f.minterms_arr);
             f.minterms_arr = NULL;
-            goto start;
+            f.size = 0;
+            break;
         }
+        f.minterms_arr[i] = atoi(temp);
+        if (f.minterms_arr[i] < 0)
+        {
+            fprintf(logs, "ERROR: Negative Minterm !!\n");
+            fprintf(logs, "Try Again\n");
+            free(f.minterms_arr);
+            f.minterms_arr = NULL;
+            f.size = 0;
+            break;
+        }
+        else if (f.minterms_arr[i] >= (1 << f.number_of_variables))
+        {
+            fprintf(logs, "ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
+            fprintf(logs, "Try Again\n");
+            free(f.minterms_arr);
+            f.minterms_arr = NULL;
+            f.size = 0;
+            break;
+        }
+        freq_arr[f.minterms_arr[i]]++;
+        temp = strtok(NULL, delim);
+        i++;
+    }
+    if (temp != NULL)
+    {
+        fprintf(logs, "INPUT ERROR !!");
+        fprintf(logs, "Try Again.\n");
+        free(f.minterms_arr);
+        f.minterms_arr = NULL;
+        f.size = 0;
+    }
+    free(minterms_input);
+
+    dontcares:
+    // printf("Do You Want to Add don't-cares ? [Y / n] ");
+    // fgets(dont_cares, 1000, stdin);
+    if (strcmp(dontcares, "") == 0 && f.minterms_arr != NULL)
+    {
+        f.dontcares = NULL;
+        f.dontcares_size = 0;
+    }
+    else if (f.minterms_arr != NULL)
+    {
+        int stop = 0;
+        do
+        {
+            f.dontcares_size = 0;
+            char *dontcares_input = strdup(dontcares);
+            // printf("Enter Comma Seperated Don't-Cares e.g.(0, 1, 2, ...): ");
+            // fgets(dontcares_input, 1000, stdin);
+            if (dontcares_input[0] == '\n')
+            {
+                printf("INPUT ERROR !!\n");
+                printf("Try Again\n");
+                free(dontcares_input);
+                continue;
+            }
+            for (int i = 0; i < strlen(dontcares_input); i++)
+                if (dontcares_input[i] == ',') f.dontcares_size++;
+            
+            f.dontcares_size++;
+            f.dontcares = (int *)malloc(f.dontcares_size * sizeof(int));
+            int i = 0;
+            char *delim = ", \n";
+            char *temp;
+            temp = strtok(dontcares_input, delim);
+            int num_of_digits = 0;
+            while (temp != NULL && i < f.dontcares_size)
+            {
+                for (int i = 0; i < strlen(temp); i++)
+                    if (isdigit(temp[i]))
+                        num_of_digits++;
+                if (num_of_digits == 0)
+                {
+                    temp = NULL;
+                    free(f.dontcares);
+                    f.dontcares = NULL;
+                    f.dontcares_size = 0;
+                    break;
+                }
+                f.dontcares[i] = atoi(temp);
+                if (f.dontcares[i] < 0)
+                {
+                    printf("ERROR: Negative Don't-Care !!\n");
+                    printf("Try Again\n");
+                    free(f.dontcares);
+                    f.dontcares = NULL;
+                    free(dontcares_input);
+                    continue;
+                }
+                else if (f.dontcares[i] >= (1 << f.number_of_variables))
+                {
+                    printf("ERROR: Maximum Don't-Care Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
+                    printf("Try Again\n");
+                    free(f.dontcares);
+                    f.dontcares = NULL;
+                    free(dontcares_input);
+                    continue;
+                }
+                else if (freq_arr[f.dontcares[i]] > 0)
+                {
+                    printf("ERROR: Minterm Found Among Don't-Cares !!\n");
+                    printf("Try Again\n");
+                    free(f.dontcares);
+                    f.dontcares = NULL;
+                    free(dontcares_input);
+                    continue;
+                }
+                temp = strtok(NULL, delim);
+                i++;
+            }
+            if (temp != NULL)
+            {
+                printf("INPUT ERROR !!");
+                printf("Try Again.\n");
+                free(f.dontcares);
+                f.dontcares = NULL;
+                free(dontcares_input);
+                continue;
+            }
+            free(dontcares_input);
+            stop = 1;
+        } while (!stop);
     }
     else
     {
+        f.dontcares = NULL;
         f.dontcares_size = 0;
-        char dontcares_input[1000];
-        printf("Enter Comma Seperated Don't-Cares e.g.(0, 1, 2, ...): ");
-        fgets(dontcares_input, 1000, stdin);
-        if (dontcares_input[0] == '\n')
-        {
-            printf("INPUT ERROR !!\n");
-            printf("Try Again\n");
-            goto start;
-        }
-        for (int i = 0; i < strlen(dontcares_input); i++)
-            if (dontcares_input[i] == ',') f.dontcares_size++;
-        
-        f.dontcares_size++;
-        f.dontcares = (int *)malloc(f.dontcares_size * sizeof(int));
-        int i = 0;
-        char *delim = ", \n";
-        char *temp;
-        temp = strtok(dontcares_input, delim);
-        while (temp != NULL && i < f.dontcares_size)
-        {
-            f.dontcares[i] = atoi(temp);
-            if (f.dontcares[i] < 0)
-            {
-                printf("ERROR: Negative Don't-Care !!\n");
-                printf("Try Again\n");
-                free(f.dontcares);
-                f.dontcares = NULL;
-                goto start;
-            }
-            else if (f.dontcares[i] >= (1 << f.number_of_variables))
-            {
-                printf("ERROR: Maximum Don't-Care Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
-                printf("Try Again\n");
-                free(f.dontcares);
-                f.dontcares = NULL;
-                goto start;
-            }
-            else if (freq_arr[f.dontcares[i]] > 0)
-            {
-                printf("ERROR: Minterm Found Among Don't-Cares !!\n");
-                printf("Try Again\n");
-                free(f.dontcares);
-                f.dontcares = NULL;
-                goto start;
-            }
-            temp = strtok(NULL, delim);
-            i++;
-        }
-        if (temp != NULL)
-        {
-            printf("INPUT ERROR !!");
-            printf("Try Again.\n");
-            free(f.dontcares);
-            f.dontcares = NULL;
-            goto start;
-        }
+        f.mcclusky_groups = NULL;
+        f.groups_num = 0;
+        f.number_of_variables = 0;
+        return f;
     }
-    
-    char dont_cares[1000];
-    if (ask_for_dontcares)
-    {
-        dontcares:
-        printf("Do You Want to Add don't-cares ? [Y / n] ");
-        fgets(dont_cares, 1000, stdin);
-        int dont_cares_length = strlen(dont_cares);
-        if (dont_cares[dont_cares_length - 1] == '\n')
-        {
-            dont_cares[dont_cares_length - 1] = '\0';
-            dont_cares_length--;
-        }
-        if (dont_cares_length != 1)
-        {
-            printf("INPUT ERROR: Try Again\n");
-            goto dontcares;
-        }
-        ask_for_dontcares = 0;
-        if (tolower(dont_cares[0]) == 'n')
-        {
-            f.dontcares = NULL;
-            f.dontcares_size = 0;
-        }
-        else if (tolower(dont_cares[0]) == 'y')
-        {
-            minput = 0;
-            goto start;
-        }
-        else
-        {
-            printf("ERROR: Invalid Option\n");
-            printf("Try Again\n");
-            goto dontcares;
-        }
-    }
-
     remove_dublicates(&f);
     f.minterms_arr = (int *)realloc(f.minterms_arr, (f.size + f.dontcares_size) * sizeof(int));
+    int realloc_line = __LINE__ - 1;
     if (f.minterms_arr == NULL)
     {
-        printf("ERROR Reallocating Memory in Line %d\n", __LINE__);
+        fprintf(logs, "ERROR Reallocating Memory in Line %d\n", realloc_line);
         exit(EXIT_FAILURE);
     }
     memmove(f.minterms_arr + f.size, f.dontcares, f.dontcares_size * sizeof(int));
@@ -1181,14 +1276,17 @@ StringNode *get_final_functions(struct function *f, StringNode *terms_head)
     return final_functions;
 }
 
-StringNode *get_solution()
+StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkLabel *label)
 {
-    struct function boolean_function = get_function();
+    struct function boolean_function = get_function(minterms, dontcares, vars_num, label);
     // print_struct(boolean_function);
     // printf("Mcclusky Groups:\n");
     // print_mcclusky_groups(boolean_function);
     // printf("Groups Num = %d\n", boolean_function.groups_num);
-    struct combination **combinations = (struct combination **)malloc(boolean_function.groups_num * sizeof(struct combination *));
+    struct combination **combinations = NULL;
+    if (boolean_function.groups_num > 0)
+        combinations = (struct combination **)malloc(boolean_function.groups_num * sizeof(struct combination *));
+
     for (int i = 0; i < boolean_function.groups_num; i++)
         combinations[i] = (struct combination *)malloc((boolean_function.groups_num - i) * sizeof(struct combination));
 
@@ -1250,13 +1348,23 @@ StringNode *get_solution()
         free(combinations[i]);
         combinations[i] = NULL;
     }
-    free(combinations);
-    combinations = NULL;
-    free(boolean_function.mcclusky_groups);
-    StringNode *possible_functions = get_final_functions(&boolean_function, not_taken);
+    if (combinations != NULL)
+    {
+        free(combinations);
+        combinations = NULL;
+    }
+    StringNode *possible_functions;
+    if (boolean_function.minterms_arr != NULL)
+        possible_functions = get_final_functions(&boolean_function, not_taken);
+    else
+        possible_functions = CreateStringNode("ERROR");
     FreeNodes(&taken);
     FreeNodes(&not_taken);
-    free(boolean_function.minterms_arr);
-    free(boolean_function.dontcares);
+    if (boolean_function.minterms_arr != NULL)
+    {
+        free(boolean_function.minterms_arr);
+        free(boolean_function.dontcares);
+        free(boolean_function.mcclusky_groups);
+    }
     return possible_functions;
 }
