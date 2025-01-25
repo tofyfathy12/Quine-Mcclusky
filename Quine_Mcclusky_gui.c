@@ -40,16 +40,13 @@ typedef struct IntArray
     int length;
 } IntArray;
 
-void get_int(char *str, int *n);
-struct function get_function(char *minterms, char *dontcares, int vars_num, GtkLabel *label);
+struct function get_function(char *minterms, char *dontcares, int vars_num, GtkTextView *textview);
 void delete_buffer();
 void print_struct(struct function f);
 char get_char(char *str, char *letter);
 char *get_binary(int number);
 char *get_expression(const char *binary);
 int get_variables_num();
-// char *get_variable_name();
-// char **get_variables();
 int ones_count(int number);
 void get_mcclusky_groups(struct function *f);
 int min(const int *arr, int size);
@@ -75,9 +72,10 @@ int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **term
 IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_of_terms);
 StringNode *get_final_functions(struct function *f, StringNode *terms_head);
 void FreeNodes(StringNode **head);
-StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkLabel *label);
+StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkTextView *label);
 void on_activate(GtkApplication *app, gpointer user_data);
 void show_possible_functions(GtkButton *button, gpointer user_data);
+void on_toggle(GtkWidget *tglbtn, gpointer user_data);
 
 int main(int argc, char *argv[])
 {   
@@ -109,30 +107,40 @@ void show_possible_functions(GtkButton *button, gpointer user_data)
 
     GtkEntry *minterms_entry, *dontcares_entry;
     GtkSpinButton *vars_num_spinbutton;
-    GtkLabel *possible_functions_label;
+    GtkTextView *possible_functions_textview;
+    GtkTextBuffer *buffer;
 
     minterms_entry = GTK_ENTRY(gtk_builder_get_object(builder, "minterms_entry"));
     dontcares_entry = GTK_ENTRY(gtk_builder_get_object(builder, "dontcares_entry"));
     vars_num_spinbutton = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "vars_num_spinbutton"));
-    possible_functions_label = GTK_LABEL(gtk_builder_get_object(builder, "possible_functions"));
+    possible_functions_textview = GTK_TEXT_VIEW(gtk_builder_get_object(builder, "possible_functions"));
+    buffer = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textbuffer1"));
 
     char *minterms = (char *)g_strdup(gtk_entry_get_text(minterms_entry));
     char *dontcares = (char *)g_strdup(gtk_entry_get_text(dontcares_entry));
     int vars_num = (int)gtk_spin_button_get_value_as_int(vars_num_spinbutton);
 
-    StringNode *solution = get_solution(minterms, dontcares, vars_num, possible_functions_label);
+    StringNode *solution = get_solution(minterms, dontcares, vars_num, possible_functions_textview);
     g_free((gchar *)minterms);
     g_free((gchar *)dontcares);
     gchar *result = "";
+    int i = 0;
     while (solution != NULL)
     {
-        gchar *temp;
+        gchar *temp, F[10];
+        g_snprintf(F, 10, "F%d = ", i);
         temp = solution->str;
-        result = g_strconcat(result, temp, NULL);
-        result = g_strconcat(result, "\n", NULL);
+        if (strcmp(temp, "ERROR") == 0)
+        {
+            result = g_strdup(temp);
+            break;
+        }
+        result = g_strconcat(result, F, temp, "\n", NULL);
         solution = solution->next;
+        i++;
     }
-    gtk_label_set_text(possible_functions_label, result);
+    gtk_text_buffer_set_text(buffer, "", 0);
+    gtk_text_buffer_set_text(buffer, (const gchar *)result, (gint)strlen(result));
     g_free(result);
     FreeNodes(&solution);
 }
@@ -143,24 +151,39 @@ void on_activate(GtkApplication *app, gpointer user_data)
     GError *Error = NULL;
     GtkWidget *window;
     GtkButton *calculation_button;
+    GtkToggleButton *togglebutton;
+    GtkEntry *dontcares_entry;
 
     builder = gtk_builder_new();
     if (!gtk_builder_add_from_file(builder, "main.glade", &Error))
     {
-        g_printerr("Error loading Glade file: %s\n", Error->message);
+        fprintf(logs, "Error loading Glade file: %s\n", (char *)(Error->message));
         g_clear_error(&Error);
+        g_object_unref(app);
+        gtk_main_quit();
     }
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     gtk_application_add_window(app, GTK_WINDOW(window));
 
     calculation_button = GTK_BUTTON(gtk_builder_get_object(builder, "calculation_button"));
-
     g_signal_connect(calculation_button, "clicked", G_CALLBACK(show_possible_functions), g_object_ref(builder));
 
+    togglebutton = GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "togglebutton"));
+    dontcares_entry = GTK_ENTRY(gtk_builder_get_object(builder, "dontcares_entry"));
+    g_signal_connect(togglebutton, "toggled", G_CALLBACK(on_toggle), dontcares_entry);
+
     gtk_widget_show_all(window);
+    gtk_widget_set_visible(GTK_WIDGET(dontcares_entry), FALSE);
 
     g_object_unref(builder);
+}
+
+void on_toggle(GtkWidget *tglbtn, gpointer user_data)
+{
+    GtkEntry *dontcares_entry = GTK_ENTRY(user_data);
+    gboolean is_active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tglbtn));
+    gtk_widget_set_visible(GTK_WIDGET(dontcares_entry), is_active);
 }
 
 StringNode *CreateStringNode(char *str)
@@ -342,37 +365,10 @@ int min(const int *arr, int size)
     return minimum;
 }
 
-// char **get_variables()
-// {
-//     int variables_num = get_variables_num();
-//     char **names = (char **)malloc(variables_num * sizeof(char *));
-//     for (int i = 0; i < variables_num; i++)
-//     {
-//         *(names + i) = get_variable_name();
-//     }
-//     return names;
-// }
-
-// char *get_variable_name()
-// {
-//     char *name = (char *)malloc(10 * sizeof(char));
-//     printf("Enter variable name: ");
-//     fgets(name, 10, stdin);
-//     name[strlen(name) - 1] = (name[strlen(name) - 1] == '\n') ? '\0' : '\0';
-//     return name;
-// }
-
-int get_variables_num()
-{
-    int variables_num;
-    get_int("Enter number of variables: ", &variables_num);
-    return variables_num;
-}
-
 char *get_expression(const char *binary)
 {
     int binary_length = strlen(binary);
-    int size = binary_length * 3 + 1;
+    int size = binary_length * 4 + 1;
     char *expression = (char *)calloc(size, sizeof(char));
     int i = 0;
     int alpha_index = 0;
@@ -389,8 +385,8 @@ char *get_expression(const char *binary)
             expression[exp_index] = temp;
             if (excess > 0)
             {
-                expression[exp_index + 1] = digit_to_char(excess);
-                expression[exp_index + 2] = '\'';
+                expression[exp_index + 1] = '\'';
+                expression[exp_index + 2] = digit_to_char(excess);
                 exp_index += 3;
             }
             else
@@ -455,15 +451,16 @@ char digit_to_char(int num)
     return letter;
 }
 
-struct function get_function(char *minterms, char *dontcares, int vars_num, GtkLabel *label)
+struct function get_function(char *minterms, char *dontcares, int vars_num, GtkTextView *textview)
 {
-    struct function f;
-    int minput = 1;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+    gchar error_msg[100];
+    struct function f = {NULL, NULL, NULL, 0, 0, 0, 0};
+    int valid = 1;
     int ask_for_dontcares = 1;
     f.number_of_variables = vars_num;
     int freq_arr[1 << f.number_of_variables];
     memset(freq_arr, 0, (1 << f.number_of_variables) * sizeof(int));
-    minterms:
     f.size = 0;
     if (strcmp(minterms, "") == 0)
     {
@@ -476,20 +473,13 @@ struct function get_function(char *minterms, char *dontcares, int vars_num, GtkL
         return f;
     }
     char *minterms_input = strdup(minterms);
-    // printf("Enter Comma Seperated Minterms e.g.(0, 1, 2, ...): ");
-    // fgets(minterms_input, 1000, stdin);
-    if (minterms_input[0] == '\n')
-    {
-        fprintf(logs, "INPUT ERROR !!\n");
-        fprintf(logs, "Try Again\n");
-    }
     for (int i = 0; i < strlen(minterms_input); i++)
         if (minterms_input[i] == ',') f.size++;
     
     f.size++;
     f.minterms_arr = (int *)malloc(f.size * sizeof(int));
     int i = 0;
-    char *delim = ", \n";
+    char *delim = ", \t\n";
     char *temp;
     temp = strtok(minterms_input, delim);
     while (temp != NULL && i < f.size)
@@ -502,29 +492,25 @@ struct function get_function(char *minterms, char *dontcares, int vars_num, GtkL
         if (num_of_digits == 0)
         {
             temp = NULL;
-            free(f.minterms_arr);
-            f.minterms_arr = NULL;
-            f.size = 0;
-            break;
+            valid = 0;
+            goto when_error;
         }
         f.minterms_arr[i] = atoi(temp);
         if (f.minterms_arr[i] < 0)
         {
             fprintf(logs, "ERROR: Negative Minterm !!\n");
-            fprintf(logs, "Try Again\n");
-            free(f.minterms_arr);
-            f.minterms_arr = NULL;
-            f.size = 0;
-            break;
+            g_snprintf(error_msg, 100, "ERROR: Negative Minterm !!\nTry Again\n");
+            gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+            valid = 0;
+            goto when_error;
         }
         else if (f.minterms_arr[i] >= (1 << f.number_of_variables))
         {
             fprintf(logs, "ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
-            fprintf(logs, "Try Again\n");
-            free(f.minterms_arr);
-            f.minterms_arr = NULL;
-            f.size = 0;
-            break;
+            g_snprintf(error_msg, 100, "ERROR: Maximum Minterm Exceeded (Maximum = %d) !!\nTry Again\n", (1 << f.number_of_variables) - 1);
+            gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+            valid = 0;
+            goto when_error;
         }
         freq_arr[f.minterms_arr[i]]++;
         temp = strtok(NULL, delim);
@@ -532,17 +518,14 @@ struct function get_function(char *minterms, char *dontcares, int vars_num, GtkL
     }
     if (temp != NULL)
     {
-        fprintf(logs, "INPUT ERROR !!");
-        fprintf(logs, "Try Again.\n");
-        free(f.minterms_arr);
-        f.minterms_arr = NULL;
-        f.size = 0;
+        fprintf(logs, "INPUT ERROR !!\n");
+        g_snprintf(error_msg, 100, "INPUT ERROR !!\nTry Again\n");
+        gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+        valid = 0;
+        goto when_error;
     }
     free(minterms_input);
 
-    dontcares:
-    // printf("Do You Want to Add don't-cares ? [Y / n] ");
-    // fgets(dont_cares, 1000, stdin);
     if (strcmp(dontcares, "") == 0 && f.minterms_arr != NULL)
     {
         f.dontcares = NULL;
@@ -550,91 +533,82 @@ struct function get_function(char *minterms, char *dontcares, int vars_num, GtkL
     }
     else if (f.minterms_arr != NULL)
     {
-        int stop = 0;
-        do
-        {
-            f.dontcares_size = 0;
-            char *dontcares_input = strdup(dontcares);
-            // printf("Enter Comma Seperated Don't-Cares e.g.(0, 1, 2, ...): ");
-            // fgets(dontcares_input, 1000, stdin);
-            if (dontcares_input[0] == '\n')
-            {
-                printf("INPUT ERROR !!\n");
-                printf("Try Again\n");
-                free(dontcares_input);
-                continue;
-            }
-            for (int i = 0; i < strlen(dontcares_input); i++)
-                if (dontcares_input[i] == ',') f.dontcares_size++;
-            
-            f.dontcares_size++;
-            f.dontcares = (int *)malloc(f.dontcares_size * sizeof(int));
-            int i = 0;
-            char *delim = ", \n";
-            char *temp;
-            temp = strtok(dontcares_input, delim);
-            int num_of_digits = 0;
-            while (temp != NULL && i < f.dontcares_size)
-            {
-                for (int i = 0; i < strlen(temp); i++)
-                    if (isdigit(temp[i]))
-                        num_of_digits++;
-                if (num_of_digits == 0)
-                {
-                    temp = NULL;
-                    free(f.dontcares);
-                    f.dontcares = NULL;
-                    f.dontcares_size = 0;
-                    break;
-                }
-                f.dontcares[i] = atoi(temp);
-                if (f.dontcares[i] < 0)
-                {
-                    printf("ERROR: Negative Don't-Care !!\n");
-                    printf("Try Again\n");
-                    free(f.dontcares);
-                    f.dontcares = NULL;
-                    free(dontcares_input);
-                    continue;
-                }
-                else if (f.dontcares[i] >= (1 << f.number_of_variables))
-                {
-                    printf("ERROR: Maximum Don't-Care Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
-                    printf("Try Again\n");
-                    free(f.dontcares);
-                    f.dontcares = NULL;
-                    free(dontcares_input);
-                    continue;
-                }
-                else if (freq_arr[f.dontcares[i]] > 0)
-                {
-                    printf("ERROR: Minterm Found Among Don't-Cares !!\n");
-                    printf("Try Again\n");
-                    free(f.dontcares);
-                    f.dontcares = NULL;
-                    free(dontcares_input);
-                    continue;
-                }
-                temp = strtok(NULL, delim);
-                i++;
-            }
-            if (temp != NULL)
-            {
-                printf("INPUT ERROR !!");
-                printf("Try Again.\n");
-                free(f.dontcares);
-                f.dontcares = NULL;
-                free(dontcares_input);
-                continue;
-            }
-            free(dontcares_input);
-            stop = 1;
-        } while (!stop);
-    }
-    else
-    {
-        f.dontcares = NULL;
         f.dontcares_size = 0;
+        char *dontcares_input = strdup(dontcares);
+        for (int i = 0; i < strlen(dontcares_input); i++)
+            if (dontcares_input[i] == ',') f.dontcares_size++;
+        
+        f.dontcares_size++;
+        f.dontcares = (int *)malloc(f.dontcares_size * sizeof(int));
+        int i = 0;
+        char *delim = ", \n";
+        char *temp;
+        temp = strtok(dontcares_input, delim);
+        int num_of_digits = 0;
+        while (temp != NULL && i < f.dontcares_size)
+        {
+            for (int i = 0; i < strlen(temp); i++)
+                if (isdigit(temp[i]))
+                    num_of_digits++;
+            if (num_of_digits == 0)
+            {
+                temp = NULL;
+                valid = 0;
+                goto when_error;
+            }
+            f.dontcares[i] = atoi(temp);
+            if (f.dontcares[i] < 0)
+            {
+                fprintf(logs, "ERROR: Negative Don't-Care !!\n");
+                g_snprintf(error_msg, 100, "ERROR: Negative Don't-Care !!\nTry Again\n");
+                gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+                valid = 0;
+                goto when_error;
+            }
+            else if (f.dontcares[i] >= (1 << f.number_of_variables))
+            {
+                fprintf(logs, "ERROR: Maximum Don't-Care Exceeded (Maximum = %d) !!\n", (1 << f.number_of_variables) - 1);
+                g_snprintf(error_msg, 100, "ERROR: Maximum Don't-Care Exceeded (Maximum = %d) !!\nTry Again\n", (1 << f.number_of_variables) - 1);
+                gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+                valid = 0;
+                goto when_error;
+            }
+            else if (freq_arr[f.dontcares[i]] > 0)
+            {
+                fprintf(logs, "ERROR: Minterm Found Among Don't-Cares !!\n");
+                g_snprintf(error_msg, 100, "ERROR: Minterm Found Among Don't-Cares !!\nTry Again\n");
+                gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+                valid = 0;
+                goto when_error;
+            }
+            temp = strtok(NULL, delim);
+            i++;
+        }
+        if (temp != NULL)
+        {
+            fprintf(logs, "INPUT ERROR !!\n");
+            g_snprintf(error_msg, 100, "INPUT ERROR !!\nTry Again\n");
+            gtk_text_buffer_set_text(buffer, error_msg, (gint)strlen(error_msg));
+            valid = 0;
+            goto when_error;
+        }
+        free(dontcares_input);
+    }
+    when_error:
+    if (!valid)
+    {
+        if (f.minterms_arr)
+        {
+            free(f.minterms_arr);
+            f.minterms_arr = NULL;
+            f.size = 0;
+        }
+        if (f.dontcares)
+        {
+            free(f.dontcares);
+            f.dontcares = NULL;
+            f.dontcares_size = 0;
+        }
         f.mcclusky_groups = NULL;
         f.groups_num = 0;
         f.number_of_variables = 0;
@@ -676,45 +650,6 @@ void delete_buffer()
 {
     char garbage[1000];
     scanf("%[^\n]%*c", garbage);
-}
-void get_int(char *str, int *n)
-{
-    bool valid = false;
-    char input[1000];
-    while (!valid)
-    {
-        printf("%s", str);
-        fgets(input, 1000, stdin);
-        int input_length = strlen(input);
-        if (input[input_length - 1] == '\n')
-        {
-            input[input_length - 1] = '\0';
-            input_length--;
-        }
-        if (input_length == 0)
-        {
-            printf("!!! Invalid Input !!!\n");
-            printf("    Try Again\n");
-            continue;
-        }
-        bool notdouble = false;
-        for (int i = 0; i < input_length; i++)
-        {
-            if (!(isdigit(input[i]) || (input[i] == '-' && i == 0)))
-            {
-                notdouble = true;
-                break;
-            }
-        }
-        if (notdouble)
-        {
-            printf("!!! Invalid Input !!!\n");
-            printf("    Try Again\n");
-        }
-        else
-            valid = true;
-    }
-    *n = atoi(input);
 }
 
 void print_struct(struct function f)
@@ -1276,9 +1211,9 @@ StringNode *get_final_functions(struct function *f, StringNode *terms_head)
     return final_functions;
 }
 
-StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkLabel *label)
+StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkTextView *textview)
 {
-    struct function boolean_function = get_function(minterms, dontcares, vars_num, label);
+    struct function boolean_function = get_function(minterms, dontcares, vars_num, textview);
     // print_struct(boolean_function);
     // printf("Mcclusky Groups:\n");
     // print_mcclusky_groups(boolean_function);
@@ -1357,7 +1292,17 @@ StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkLabel
     if (boolean_function.minterms_arr != NULL)
         possible_functions = get_final_functions(&boolean_function, not_taken);
     else
-        possible_functions = CreateStringNode("ERROR");
+    {
+        GtkTextIter start, end;
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
+        gtk_text_buffer_get_bounds(buffer, &start, &end);
+        gchar *str = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+        if (g_strcmp0(str, "") == 0)
+            possible_functions = CreateStringNode("ERROR");
+        else
+            possible_functions = CreateStringNode(str);
+        g_free(str);
+    }
     FreeNodes(&taken);
     FreeNodes(&not_taken);
     if (boolean_function.minterms_arr != NULL)

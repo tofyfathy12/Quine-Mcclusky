@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY appversion "3.1.0">
+<!ENTITY manrevision "3.0">
+<!ENTITY app "Glade">
+]>
+<!-- 
+  Maintained by the GNOME Documentation Project
+  http://developer.gnome.org/projects/gdp
+  Template version: 2.0 beta
+  Template last modified Apr 11, 2002
+-->
+<article id="index" lang="en">
+
+  <articleinfo> 
+    <title>글레이드 인터페이스 디자인 프로그램 설명서</title> 
+      
+    <abstract role="description"><para>글레이드는 GTK+ 프로그램을 위한 사용자 인터페이스 디자인 프로그램 입니다.</para>
+    </abstract>
+
+    <copyright> 
+      <year>2006</year> 
+      <holder>Vincent Geddes</holder> 
+    </copyright>
+    <copyright> 
+      <year>2004</year>
+      <year>2003</year>
+      <holder>Sun Microsystems</holder> 
+    </copyright> 
+    <copyright> 
+      <year>2002</year><year>2000</year> 
+      <holder>Michael Vance</holder> 
+    </copyright> 
+
+    <publisher> 
+      <publishername>그놈 문서화 프로젝트</publishername> 
+    </publisher> 
+
+   <include xmlns="http://www.w3.org/2001/XInclude" href="legal.xml"/>
+
+    <authorgroup> 
+      <author role="maintainer"> 
+	<firstname>Vincent</firstname> 
+	<surname>Geddes</surname> 
+	<affiliation> 
+	  <orgname>그놈 문서화 프로젝트</orgname>
+	  <address><email>vincent.geddes@gmail.com</email></address>
+	</affiliation>
+      </author> 
+      <author> 
+        <firstname>Sun</firstname> 
+        <surname>GNOME Documentation Team</surname> 
+        <affiliation> 
+          <orgname>Sun Microsystems</orgname> 
+        </affiliation> 
+       </author> 
+       <author> 
+         <firstname>Michael</firstname> 
+         <surname>Vance</surname> 
+         <affiliation> 
+           <orgname>그놈 문서화 프로젝트</orgname> 
+           </affiliation> 
+       </author> 
+    </authorgroup>
+
+
+<!-- According to GNU FDL, revision history is mandatory if you are -->
+<!-- modifying/reusing someone else's document.  If not, you can omit it. -->
+<!-- Remember to remove the &manrevision; entity from the revision entries other
+-->
+<!-- than the current revision. -->
+<!-- The revision numbering system for GNOME manuals is as follows: -->
+<!-- * the revision number consists of two components -->
+<!-- * the first component of the revision number reflects the release version of the GNOME desktop. -->
+<!-- * the second component of the revision number is a decimal unit that is incremented with each revision of the manual. -->
+<!-- For example, if the GNOME desktop release is V2.x, the first version of the manual that -->
+<!-- is written in that desktop timeframe is V2.0, the second version of the manual is V2.1, etc. -->
+<!-- When the desktop release version changes to V3.x, the revision number of the manual changes -->
+<!-- to V3.0, and so on. -->  
+    <revhistory>
+        <revision> 
+		<revnumber>Glade Manual 3.0</revnumber> 
+		<date>5 December 2006</date>
+		<revdescription> 
+	  		<para role="author">Vincent Geddes</para>
+	  		<para role="publisher">그놈 문서화 프로젝트</para>
+		</revdescription> 
+        </revision>
+        <revision> 
+                <revnumber>Glade Manual 2.1;</revnumber> 
+                <date>17 June 2004</date> 
+                <revdescription> 
+                        <para role="author">Sun 그놈 문서화 팀</para>
+                        <para role="publisher">그놈 문서화 프로젝트</para>
+                </revdescription> 
+        </revision>
+        <revision> 
+                <revnumber>Glade User Manual 2.0</revnumber> 
+                <date>25 February 2004</date> 
+                <revdescription> 
+                        <para role="author">Sun 그놈 문서화 팀</para>
+                        <para role="publisher">그놈 문서화 프로젝트</para>
+                </revdescription> 
+        </revision>             
+        <revision> 
+                <revnumber>Glade User Manual 1.2</revnumber> 
+                <date>10 Feb 2004</date> 
+                <revdescription> 
+                        <para role="author">Sun 그놈 문서화 팀</para>
+                        <para role="publisher">그놈 문서화 프로젝트</para>
+                </revdescription> 
+        </revision>  
+        <revision> 
+                <revnumber>Glade User Manual 1.1</revnumber> 
+                <date>30 Mar 2002</date> 
+                <revdescription> 
+                        <para role="author">Michael Vance</para>
+                        <para role="publisher">그놈 문서화 프로젝트</para>
+                </revdescription> 
+        </revision> 
+        <revision> 
+                <revnumber>Glade User Manual 1.0</revnumber> 
+                <date>11 May 2000</date> 
+                <revdescription> 
+                        <para role="author">Michael Vance</para>
+                        <para role="publisher">그놈 문서화 프로젝트</para>
+                </revdescription> 
+        </revision> 
+    </revhistory> 
+
+    <releaseinfo>이 사용자 설명서는 글레이드 버전 3.1.0을 설명 합니다.</releaseinfo> 
+    <legalnotice> 
+      <title>피드백</title> 
+      <para>To report a bug or make a suggestion regarding the Glade application or this manual, visit
+      the <ulink url="https://gitlab.gnome.org/GNOME/glade/issues/">GNOME Issue Tracker</ulink>. 
+
+      </para>
+<!-- Translators may also add here feedback address for translations -->
+    </legalnotice> 
+  </articleinfo> 
+
+    <indexterm><primary>glade</primary></indexterm>
+    <indexterm><primary>user interface designer</primary></indexterm>
+
+
+<!-- ============= Document Body ============================= -->
+<!-- ============= Introduction ============================== -->
+<!-- Use the Introduction section to give a brief overview of what
+     the application is and what it does. -->
+  <sect1 id="introduction"> 
+    <title>소개</title> 
+
+    <para>The <application>Glade</application> interface designer enables you to create and edit user interface designs for 
+    <application>GTK+</application> applications.</para>
+
+    <para>The GTK+ library provides an extensive collection of user interface building blocks
+    such as text boxes, dialog labels, numeric entries, check boxes, and menus. These
+    building blocks are called <emphasis>widgets</emphasis>. You can use Glade to place widgets in a GUI. Glade allows you
+    to modify the layout and properties of these widgets. You can also use Glade to add connections between
+    widgets and application source code.</para>
+
+    <para>The user interfaces designed in Glade are stored in an XML format, enabling easy integration 
+    with external tools. You can use the <application>libglade</application> library to dynamically create
+    GUIs from the XML description.</para>
+
+  </sect1>
+
+  <sect1 id="getting-started"> 
+    <title>시작하기</title> 
+
+    <sect2 id="glade-start">
+    <title>To Start <application>Glade</application></title>
+    <para>You can start <application>Glade</application> in the following ways:
+    </para> 
+    <variablelist>
+    	<varlistentry>
+    		<term><guimenu>Applications</guimenu> menu</term>
+    		<listitem>
+    		<para>Choose 
+    		<menuchoice>
+    		<guisubmenu>Programming</guisubmenu>
+    		<guimenuitem>Glade</guimenuitem>
+    		</menuchoice>. </para>
+    		</listitem>
+    	</varlistentry>
+    	<varlistentry>
+    		<term>명령행</term>
+    		<listitem>
+			<para>To start <application>Glade</application> from a command line, type <command>glade</command>
+			and then press <keycap>Return</keycap>.</para>
+    		</listitem>
+    	</varlistentry>
+    </variablelist>
+    </sect2>
+
+    <sect2 id="glade-when-start">
+    <title>When You Start <application>Glade</application></title>
+    <para>When you start <application>Glade</application>, the following window is displayed.</para>
+
+        <figure id="main-window-fig"> 
+          <title><application>Glade</application> window</title> 
+            <screenshot> 
+              <mediaobject>
+                <imageobject><imagedata fileref="figures/main-window.png" format="PNG"/></imageobject>
+                <textobject><phrase>Shows the <application>Glade</application> window.</phrase></textobject> 
+              </mediaobject> 
+            </screenshot> 
+        </figure>
+        
+        <para>The <application>Glade</application> window contains the following elements: </para>
+
+        <variablelist>
+          <varlistentry> <term>메뉴모음</term>
+            <listitem>
+            <para>The menus on the menubar contain all of the commands you need to work with files in <application>Glade</application>.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry> <term>도구모음</term>
+            <listitem>
+            <para>도구모음은 메뉴모음에서 접근할 수 있는 명령의 하위모음이다.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry> <term>디자인 영역</term>
+            <listitem>
+            <para>디자인 영역은 사용자 인터페이스를 시각적으로 확인하면서 수정할 수 있는 곳 입니다.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry> <term>팔레트</term>
+            <listitem>
+            <para>팔레트는 사용자 인터페이스를 구성하는데 필요한 위젯이 들어있다.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry> <term>인스펙터</term>
+            <listitem>
+            <para>인스펙터는 프로젝트에 있는 위젯의 정보를 보여줍니다.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry> <term>속성 편집기</term>
+            <listitem>
+            <para>속성 편집기는 위젯의 속성을 변경하거나 소스코드와 연결시킬 때 사용 됩니다.</para>
+            </listitem>
+          </varlistentry>
+          <varlistentry> <term>상태 표시줄</term>
+            <listitem>
+            <para>The statusbar displays information about current <application>Glade</application> activity and contextual information about the menu items.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+    </sect2>
+  </sect1>
+
+  <sect1 id="working-with-projects"> 
+         <title>프로젝트로 작업하기</title> 
+  
+ 
+<!-- To Create a New Project  -->
+	 <sect2 id="glade-create-new-project"> 
+		<title>새로운 프로젝트 만들기</title>
+		<para>To create a new project, choose <menuchoice><guimenu>File</guimenu><guimenuitem>New</guimenuitem></menuchoice>. The application displays a new blank project in the <application>Glade</application> window.</para>
+	 </sect2>
+
+	 <sect2 id="glade-open-project"> 
+		<title>프로젝트 열기</title>
+		<para>To open an existing project, choose <menuchoice><guimenu>File</guimenu><guimenuitem>Open</guimenuitem></menuchoice>. The application displays the project in the <application>Glade</application> window.</para>
+	 </sect2>
+
+<!-- To Save a Project -->
+	 <sect2 id="glade-save-project"> 
+		<title>프로젝트 저장하기</title>
+		<para>다음과 같은 방법으로 프로젝트를 저장 할 수 있습니다:</para>
+		<itemizedlist> 
+		  <listitem><para>To save changes to an existing project file, choose <menuchoice><guimenu>File</guimenu><guimenuitem>Save</guimenuitem></menuchoice>. </para>
+		  </listitem>
+		  <listitem><para>To save a new project file or to save an existing project file under a new filename, choose <menuchoice> <guimenu>File</guimenu> <guimenuitem>Save As</guimenuitem> </menuchoice>. Enter a name for the project file in the <guilabel>Save As</guilabel> dialog, then click <guibutton>Save</guibutton>. </para>
+		  </listitem>
+		</itemizedlist>
+	 </sect2>
+  </sect1>
+
+
+  <sect1 id="working-with-widgets"> 
+         <title>위젯으로 작업하기</title>
+         <sect2 id="select-widgets-palette">
+                <title>팔레트 창에서 위젯을 선택하기</title>
+                <para>
+                  You can work with the widgets in the 
+                  <guilabel>Palette</guilabel> window in the following
+ways:
+                </para>
+                <variablelist> 
+                  <varlistentry> 
+                         <term>선택 모드</term> 
+                         <listitem>
+                                <para>
+                                  To use selection mode,
+ click on the 
+                                  <guilabel>Selector</guilabel> arrow. The
+pointer changes to an
+                                  arrow to indicate that selection mode is
+active. In this mode, you use the mouse to select widgets in your project.
+You can then use the <guilabel>Properties</guilabel> window to edit the
+properties of the widgets.</para>
+<para>위젯 컨텍스트 메뉴로 위젯을 선택 할 수도 있습니다. 위젯에서 오른쪽 마우스 버튼을 클릭하면 위젯 컨텍스트 메뉴를 열 수 있습니다.</para><para>You
+can add multiple widgets of a specific type from the
+<guilabel>Palette</guilabel> to your project by holding down the
+<keycap>Control</keycap> key when you select a widget. You need to click on
+the <guilabel>Selector</guilabel> arrow or another widget in the
+<guilabel>Palette</guilabel> to return to normal mode.</para>
+                         </listitem> 
+                  </varlistentry> 
+                </variablelist> 
+                <variablelist> 
+                  <varlistentry> 
+                         <term>위젯 변경 모드</term> 
+                         <listitem> 
+                                <para>
+                                  To use widget placement mode, select a
+widget in the 
+                                  <guilabel>Palette</guilabel> window. When
+you select most widgets, the
+                                  pointer changes to a pointer-plus-cross.
+You can then place the widget inside containers,
+                                  toplevel  widgets, and so on. After you
+place a widget, the mode returns to
+                                  selection mode.</para>
+                         </listitem> 
+                  </varlistentry> 
+                </variablelist> 
+                <variablelist> 
+                  <varlistentry> 
+                         <term>Toplevel placement mode</term> 
+                         <listitem> 
+                                <para>
+                                  To use toplevel placement mode, select a
+defined toplevel
+                                  widget in the
+<guilabel>Palette</guilabel> window. When you select a toplevel
+                                  widget in the 
+                                  <guilabel>Palette</guilabel> window, the
+widget appears
+                                  immediately on your desktop. You can then
+edit the widget. After you select a toplevel widget,
+                                  the mode returns to selection mode.
+                                </para>
+                         </listitem> 
+                  </varlistentry> 
+                </variablelist> 
+         </sect2>
+<sect2 id="organize-widgets">
+<title>프로젝트에서 위젯을 배치하기</title>
+<para>You use widget containers, or boxes, to layout and organize widgets
+in your project window. You can choose the following widget containers from
+the <guilabel>Palette</guilabel> window:
+</para>
+<itemizedlist>
+<listitem><para>가로 상자</para>
+</listitem><listitem><para>세로 상자</para></listitem>
+<listitem><para>테이블</para></listitem>
+<listitem><para>고정 위치</para></listitem>
+<listitem><para>가로 단추 상자</para></listitem>
+<listitem><para>세로 단추 상자</para></listitem>
+<listitem><para>가로 칸막이</para></listitem>
+<listitem><para>세로 칸막이</para></listitem>
+<listitem><para>노트북</para></listitem>
+<listitem><para>프레임</para></listitem>
+<listitem><para>스크롤 창</para></listitem>
+<listitem><para>뷰포트</para></listitem>
+</itemizedlist>
+<para>
+You can  nest boxes  to create complex layout structures. When you create
+horizontal and vertical boxes, <application>Glade</application> asks you
+how many rows or columns to create initially, though rows and columns can
+easily be added or deleted later. 
+</para>
+<para>
+When you have created all the boxes you require, you can add specific
+widgets like labels, buttons, and more complicated widgets into the boxes.
+Notice that <application>Glade</application> packs widgets into the layout
+which eliminates a lot of tedious work. The use of boxes enables windows to
+change size to accommodate different size labels in different languages
+when the application is localized.</para></sect2>
+         <sect2 id="place-widgets-clipboard"> 
+                <title>클립보드로 위젯을 옮기기</title> 
+                <para>
+                  To remove a widget from a parent and place the widget on
+the clipboard,
+                  select the widget then choose 
+                  <menuchoice> 
+                         <guimenu>Edit</guimenu> 
+                         <guisubmenu>Cut</guisubmenu> 
+                  </menuchoice>. 
+                </para>
+         </sect2> 
+         <sect2 id="copy-widget-clipboard"> 
+                <title>클립보드로 위젯을 복사하기</title> 
+                <para>
+                  To copy a widget to the clipboard, select the widget then
+choose 
+                  <menuchoice> 
+                         <guimenu>Edit</guimenu> 
+                         <guisubmenu>Copy</guisubmenu> 
+                  </menuchoice>. The original widget remains attached to
+the parent. 
+                </para>
+         </sect2> 
+         <sect2 id="paste-widget-clipboard"> 
+                <title>클립보드에 있는 위젯을 프로젝트에 붙여넣기</title> 
+                <para>
+                  To paste a widget that exists on the clipboard into your
+project,
+                  choose 
+                  <menuchoice> 
+                         <guimenu>Edit</guimenu> 
+                         <guisubmenu>Paste</guisubmenu> 
+                  </menuchoice>.</para><para>All widgets must have a unique
+name within <application>Glade</application>. If you cut a widget, and then
+paste the widget into your project, then the widget and all of the children
+of the widget keep their original names. If you copy a widget, or paste the
+widget multiple times into your project, then
+<application>Glade</application> generates new names for the widget
+copies.</para>
+         </sect2> 
+         <sect2 id="delete-widget"> 
+                <title>위젯을 삭제하기</title> 
+                <para>To delete a widget from the parent without
+                  moving the widget to the clipboard, 
+                                select the widget then 
+                                choose 
+                                <menuchoice> 
+                                  <guimenu>Edit</guimenu> 
+                                  <guisubmenu>Delete</guisubmenu> 
+                                </menuchoice>. 
+                         </para>
+                 
+         </sect2> 
+         
+         <sect2 id="edit-widget"> 
+                <title>위젯의 속성을 변경하기</title> 
+                <para>속성 편집기는 선택한 위젯의 속성을 편집 할 때 사용합니다. 위젯의 속성을 변경하려면 속성 창의 속성 필드에 적절한 값을 입력하세요.</para>
+                
+                
+         </sect2> 
+  </sect1>
+  
+<sect1 id="about"> 
+    <title>글레이드 관하여</title> 
+    <para> Glade is maintained by the Glade developers and GNOME community volunteers.
+      To find more information about Glade, please visit the 
+      <ulink url="http://glade.gnome.org" type="http">Glade 
+      Web site</ulink>.</para>
+    <para>
+      To report a bug or make a suggestion regarding this application or
+      this manual, you can submit them using 
+      <ulink url="https://gitlab.gnome.org/GNOME/glade/issues/" type="http">our issue tracking system</ulink>.
+    </para>
+
+    <para>
+      Another excellent source of information are the Glade 
+      <ulink url="http://lists.ximian.com/mailman/listinfo/glade-users" type="http">user</ulink> and 
+      <ulink url="http://lists.ximian.com/mailman/listinfo/glade-devel" type="http">developer</ulink> mailing lists.  In addition to 
+      subscribing, you might also want to browse the list archives, available
+      via these same links.
+    </para>
+
+    <para> This program is distributed under the terms of the GNU
+      General Public license as published by the Free Software
+      Foundation; either version 2 of the License, or (at your option)
+      any later version. A copy of this license can be found at this
+      <ulink url="help:gpl" type="help">link</ulink>, or in the file
+      COPYING included with the source code of this program. </para>
+  </sect1> 
+
+</article>
