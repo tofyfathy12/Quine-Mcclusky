@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkAdjustment" id="adjustment1">
+    <property name="upper">64</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkTextBuffer" id="textbuffer1"/>
+  <object class="GtkApplicationWindow" id="window">
+    <property name="can-focus">False</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <child>
+      <object class="GtkFixed" id="fixed">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkButton" id="calculation_button">
+            <property name="label" translatable="yes">Calculate Function</property>
+            <property name="width-request">224</property>
+            <property name="height-request">71</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Generate the boolean functions.</property>
+            <property name="halign">start</property>
+            <property name="valign">start</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+          </object>
+          <packing>
+            <property name="x">197</property>
+            <property name="y">203</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="minterms_entry">
+            <property name="width-request">300</property>
+            <property name="height-request">37</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="max-length">1000</property>
+            <property name="placeholder-text" translatable="yes">0, 1, 2, 3, ...</property>
+            <property name="input-purpose">digits</property>
+          </object>
+          <packing>
+            <property name="x">257</property>
+            <property name="y">51</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="minterms_label">
+            <property name="width-request">260</property>
+            <property name="height-request">37</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="label" translatable="yes">Enter minterms here :    </property>
+            <property name="use-underline">True</property>
+            <property name="justify">fill</property>
+            <property name="width-chars">0</property>
+            <property name="max-width-chars">0</property>
+            <attributes>
+              <attribute name="font-desc" value="Segoe Print Bold 12"/>
+              <attribute name="foreground" value="#ffffffffffff"/>
+              <attribute name="background" value="#24241f1f3131"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="y">51</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="dontcares_label">
+            <property name="width-request">260</property>
+            <property name="height-request">36</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="label" translatable="yes">Enter Don't-Cares here : </property>
+            <property name="use-underline">True</property>
+            <property name="justify">fill</property>
+            <property name="width-chars">0</property>
+            <property name="max-width-chars">0</property>
+            <attributes>
+              <attribute name="font-desc" value="Segoe Print Bold 12"/>
+              <attribute name="foreground" value="#ffffffffffff"/>
+              <attribute name="background" value="#24241f1f3131"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="y">103</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="dontcares_entry">
+            <property name="width-request">300</property>
+            <property name="height-request">37</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="max-length">1000</property>
+            <property name="placeholder-text" translatable="yes">0, 1, 2, 3, ...</property>
+            <property name="input-purpose">digits</property>
+          </object>
+          <packing>
+            <property name="x">258</property>
+            <property name="y">103</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="vars_num_spinbutton">
+            <property name="width-request">300</property>
+            <property name="height-request">37</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="width-chars">2</property>
+            <property name="max-width-chars">2</property>
+            <property name="progress-pulse-step">1</property>
+            <property name="input-purpose">digits</property>
+            <property name="adjustment">adjustment1</property>
+            <property name="climb-rate">1</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="x">257</property>
+            <property name="y">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="variablesnum_label">
+            <property name="width-request">260</property>
+            <property name="height-request">35</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="label" translatable="yes">Number of Variables :     </property>
+            <property name="use-underline">True</property>
+            <property name="justify">fill</property>
+            <property name="width-chars">0</property>
+            <property name="max-width-chars">0</property>
+            <attributes>
+              <attribute name="font-desc" value="Segoe Print Bold 12"/>
+              <attribute name="foreground" value="#ffffffffffff"/>
+              <attribute name="background" value="#24241f1f3131"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="y">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="results_label">
+            <property name="width-request">108</property>
+            <property name="height-request">45</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="label" translatable="yes">Results : </property>
+            <attributes>
+              <attribute name="font-desc" value="Segoe Print Bold 14"/>
+              <attribute name="foreground" value="#ffffffffffff"/>
+              <attribute name="background" value="#1a1a5f5fb4b4"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="x">15</property>
+            <property name="y">271</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolled_window">
+            <property name="width-request">717</property>
+            <property name="height-request">414</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkTextView" id="possible_functions">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="editable">False</property>
+                <property name="buffer">textbuffer1</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="x">15</property>
+            <property name="y">314</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToggleButton" id="togglebutton">
+            <property name="label" translatable="yes">Don't-Cares</property>
+            <property name="related-action"/>
+            <property name="width-request">125</property>
+            <property name="height-request">37</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="x">564</property>
+            <property name="y">103</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
