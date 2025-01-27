@@ -40,7 +40,7 @@ typedef struct IntArray
     int length;
 } IntArray;
 
-struct function get_function(char *minterms, char *dontcares, int vars_num, GtkTextView *textview);
+struct function get_function(char *minterms, GtkEntry *dontcares_entry, int vars_num, GtkTextView *textview);
 void delete_buffer();
 void print_struct(struct function f);
 char get_char(char *str, char *letter);
@@ -72,7 +72,7 @@ int **get_prime_implicants_chart(int *minterms, int num_of_minterms, char **term
 IntArray get_petrick(int *minterms, int num_of_minterms, char **terms, int num_of_terms);
 StringNode *get_final_functions(struct function *f, StringNode *terms_head);
 void FreeNodes(StringNode **head);
-StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkTextView *label);
+StringNode *get_solution(char *minterms, GtkEntry *dontcares_entry, int vars_num, GtkTextView *textview);
 void on_activate(GtkApplication *app, gpointer user_data);
 void show_possible_functions(GtkButton *button, gpointer user_data);
 void on_toggle(GtkWidget *tglbtn, gpointer user_data);
@@ -117,12 +117,10 @@ void show_possible_functions(GtkButton *button, gpointer user_data)
     buffer = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textbuffer1"));
 
     char *minterms = (char *)g_strdup(gtk_entry_get_text(minterms_entry));
-    char *dontcares = (char *)g_strdup(gtk_entry_get_text(dontcares_entry));
     int vars_num = (int)gtk_spin_button_get_value_as_int(vars_num_spinbutton);
 
-    StringNode *solution = get_solution(minterms, dontcares, vars_num, possible_functions_textview);
+    StringNode *solution = get_solution(minterms, dontcares_entry, vars_num, possible_functions_textview);
     g_free((gchar *)minterms);
-    g_free((gchar *)dontcares);
     gchar *result = "";
     int i = 0;
     while (solution != NULL)
@@ -451,8 +449,18 @@ char digit_to_char(int num)
     return letter;
 }
 
-struct function get_function(char *minterms, char *dontcares, int vars_num, GtkTextView *textview)
+struct function get_function(char *minterms, GtkEntry *dontcares_entry, int vars_num, GtkTextView *textview)
 {
+    char *dontcares;
+    if (gtk_widget_get_visible(GTK_WIDGET(dontcares_entry)))
+    {
+        dontcares = (char *)gtk_entry_get_text(dontcares_entry);
+    }
+    else
+    {
+        dontcares = (char *)calloc(1, sizeof(char));
+        printf("%d\n", !strcmp(dontcares, ""));
+    }
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
     gchar error_msg[100];
     struct function f = {NULL, NULL, NULL, 0, 0, 0, 0};
@@ -470,6 +478,7 @@ struct function get_function(char *minterms, char *dontcares, int vars_num, GtkT
         f.dontcares_size = 0;
         f.groups_num = 0;
         f.number_of_variables = 0;
+        g_free((gchar *)dontcares);
         return f;
     }
     char *minterms_input = strdup(minterms);
@@ -612,6 +621,7 @@ struct function get_function(char *minterms, char *dontcares, int vars_num, GtkT
         f.mcclusky_groups = NULL;
         f.groups_num = 0;
         f.number_of_variables = 0;
+        g_free((gchar *)dontcares);
         return f;
     }
     remove_dublicates(&f);
@@ -1211,9 +1221,9 @@ StringNode *get_final_functions(struct function *f, StringNode *terms_head)
     return final_functions;
 }
 
-StringNode *get_solution(char *minterms, char *dontcares, int vars_num, GtkTextView *textview)
+StringNode *get_solution(char *minterms, GtkEntry *dontcares_entry, int vars_num, GtkTextView *textview)
 {
-    struct function boolean_function = get_function(minterms, dontcares, vars_num, textview);
+    struct function boolean_function = get_function(minterms, dontcares_entry, vars_num, textview);
     // print_struct(boolean_function);
     // printf("Mcclusky Groups:\n");
     // print_mcclusky_groups(boolean_function);
