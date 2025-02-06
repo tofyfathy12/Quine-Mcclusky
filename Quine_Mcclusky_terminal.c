@@ -45,8 +45,6 @@ char get_char(char *str, char *letter);
 char *get_binary(int number);
 char *get_expression(const char *binary);
 int get_variables_num();
-// char *get_variable_name();
-// char **get_variables();
 int ones_count(int number);
 void get_mcclusky_groups(struct function *f);
 int min(const int *arr, int size);
@@ -55,7 +53,6 @@ void remove_dublicates(struct function *f);
 void print_mcclusky_groups(struct function f);
 int max(int arr[], int size);
 char *get_full_bin(int var_num, int num);
-// struct combination combine0(const int *g1, const int *g2); // it doesn't matter anymore as I changed mcclusky groups to be strings (0s & 1s)
 struct combination general_comb(struct combination g1, struct combination g2, StringNode *taken_node, StringNode *nottaken_node, int last_combination_of_column);
 bool onedif(const char *bin1, const char *bin2);
 int index_of_difference(const char *bin1, const char *bin2);
@@ -260,26 +257,6 @@ int min(const int *arr, int size)
         minimum = (minimum < arr[i]) ? minimum : arr[i];
     return minimum;
 }
-
-// char **get_variables()
-// {
-//     int variables_num = get_variables_num();
-//     char **names = (char **)malloc(variables_num * sizeof(char *));
-//     for (int i = 0; i < variables_num; i++)
-//     {
-//         *(names + i) = get_variable_name();
-//     }
-//     return names;
-// }
-
-// char *get_variable_name()
-// {
-//     char *name = (char *)malloc(10 * sizeof(char));
-//     printf("Enter variable name: ");
-//     fgets(name, 10, stdin);
-//     name[strlen(name) - 1] = (name[strlen(name) - 1] == '\n') ? '\0' : '\0';
-//     return name;
-// }
 
 int get_variables_num()
 {
@@ -733,43 +710,6 @@ char *get_full_bin(int var_num, int num)
     }
     return full_bin;
 }
-
-// struct combination combine0(const int *g1, const int *g2) // This function serves nothing to the program and I'm thinking of deleting it
-// {
-//     int size1 = get_length(g1);
-//     int size2 = get_length(g2);
-//     struct combination comb1;
-//     char **combined = (char **)malloc(size1 * size2 * sizeof(char *));
-//     for (int i = 0; i < size1 * size2; i++)
-//         *(combined + i) = (char *)malloc(4 * sizeof(char)); // num of variables should be fixes to be variable
-//     int combined_index = 0;
-//     for (int i = 0; i < size1; i++)
-//     {
-//         char *bin1 = get_full_bin(4, *(g1 + i));
-//         for (int j = 0; j < size2; j++)
-//         {
-//             char *bin2 = get_full_bin(4, *(g2 + j));
-//             if (onedif(bin1, bin2))
-//             {
-//                 int index = index_of_difference(bin1, bin2);
-//                 char *new_comb = strdup(bin1);
-//                 new_comb[index] = '_';
-//                 *(combined + combined_index) = new_comb;
-//                 combined_index++;
-//                 free(new_comb);
-//                 new_comb = NULL;
-//             }
-//             free(bin2);
-//             bin2 = NULL;
-//         }
-//         free(bin1);
-//         bin1 = NULL;
-//     }
-//     combined = (char **)realloc(combined, combined_index * sizeof(char *));
-//     comb1.combgroup = combined;
-//     comb1.size = combined_index;
-//     return comb1;
-// }
 
 struct combination general_comb(struct combination g1, struct combination g2, StringNode *taken_node, StringNode *nottaken_node, int last_combination_of_column)
 {

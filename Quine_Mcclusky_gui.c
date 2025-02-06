@@ -41,12 +41,9 @@ typedef struct IntArray
 } IntArray;
 
 struct function get_function(char *minterms, GtkEntry *dontcares_entry, int vars_num, GtkTextView *textview);
-void delete_buffer();
 void print_struct(struct function f);
-char get_char(char *str, char *letter);
 char *get_binary(int number);
 char *get_expression(const char *binary);
-int get_variables_num();
 int ones_count(int number);
 void get_mcclusky_groups(struct function *f);
 int min(const int *arr, int size);
@@ -55,12 +52,10 @@ void remove_dublicates(struct function *f);
 void print_mcclusky_groups(struct function f);
 int max(int arr[], int size);
 char *get_full_bin(int var_num, int num);
-// struct combination combine0(const int *g1, const int *g2); // it doesn't matter anymore as I changed mcclusky groups to be strings (0s & 1s)
 struct combination general_comb(struct combination g1, struct combination g2, StringNode *taken_node, StringNode *nottaken_node, int last_combination_of_column);
 bool onedif(const char *bin1, const char *bin2);
 int index_of_difference(const char *bin1, const char *bin2);
 char digit_to_char(int num);
-int get_length(const int group[]);
 int binary_to_decimal(char *binary);
 StringNode *CreateStringNode(char *str);
 void InsertStringNode(char *str, StringNode *head);
@@ -83,9 +78,7 @@ int main(int argc, char *argv[])
     GtkApplication *app;
     int status;
 
-    app = gtk_application_new("com.example.fixedlayout", 0);
-
-    
+    app = gtk_application_new("com.example.MyApp", G_APPLICATION_DEFAULT_FLAGS);
 
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
 
@@ -93,10 +86,7 @@ int main(int argc, char *argv[])
 
     g_object_unref(app);
 
-    // StringNode *solution = get_solution();
-    // printf("Possible Functions:\n");
-    // PrintStringNodes(solution, '\n');
-    // FreeNodes(&solution);
+    fclose(logs);
 
     return status;
 }
@@ -157,8 +147,9 @@ void on_activate(GtkApplication *app, gpointer user_data)
     {
         fprintf(logs, "Error loading Glade file: %s\n", (char *)(Error->message));
         g_clear_error(&Error);
-        g_object_unref(app);
-        gtk_main_quit();
+        g_application_quit(G_APPLICATION(app));
+        g_object_unref(builder);
+        return;
     }
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
@@ -281,17 +272,6 @@ void FreeNodes(StringNode **head)
         current = next;
     }
     *head = NULL;
-}
-
-int get_length(const int *group)
-{
-    int i = 0, size = 0;
-    while (group[i] != -1)
-    {
-        size++;
-        i++;
-    }
-    return size;
 }
 
 int ones_count(int number)
@@ -459,7 +439,6 @@ struct function get_function(char *minterms, GtkEntry *dontcares_entry, int vars
     else
     {
         dontcares = (char *)calloc(1, sizeof(char));
-        printf("%d\n", !strcmp(dontcares, ""));
     }
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(textview);
     gchar error_msg[100];
@@ -638,30 +617,6 @@ struct function get_function(char *minterms, GtkEntry *dontcares_entry, int vars
     return f;
 }
 
-char get_char(char *str, char *letter)
-{
-    while (1)
-    {
-        printf("%s", str);
-        char newline;
-        int checker = scanf("%c%c", letter, &newline);
-        if (checker != 2 || newline != '\n')
-        {
-            delete_buffer();
-            printf("THAT'S NOT VALID. TRY AGAIN.\n");
-        }
-        else
-            break;
-    }
-    return *letter;
-}
-
-void delete_buffer()
-{
-    char garbage[1000];
-    scanf("%[^\n]%*c", garbage);
-}
-
 void print_struct(struct function f)
 {
     for (int i = 0; i < f.size; i++)
@@ -773,43 +728,6 @@ char *get_full_bin(int var_num, int num)
     }
     return full_bin;
 }
-
-// struct combination combine0(const int *g1, const int *g2) // This function serves nothing to the program and I'm thinking of deleting it
-// {
-//     int size1 = get_length(g1);
-//     int size2 = get_length(g2);
-//     struct combination comb1;
-//     char **combined = (char **)malloc(size1 * size2 * sizeof(char *));
-//     for (int i = 0; i < size1 * size2; i++)
-//         *(combined + i) = (char *)malloc(4 * sizeof(char)); // num of variables should be fixes to be variable
-//     int combined_index = 0;
-//     for (int i = 0; i < size1; i++)
-//     {
-//         char *bin1 = get_full_bin(4, *(g1 + i));
-//         for (int j = 0; j < size2; j++)
-//         {
-//             char *bin2 = get_full_bin(4, *(g2 + j));
-//             if (onedif(bin1, bin2))
-//             {
-//                 int index = index_of_difference(bin1, bin2);
-//                 char *new_comb = strdup(bin1);
-//                 new_comb[index] = '_';
-//                 *(combined + combined_index) = new_comb;
-//                 combined_index++;
-//                 free(new_comb);
-//                 new_comb = NULL;
-//             }
-//             free(bin2);
-//             bin2 = NULL;
-//         }
-//         free(bin1);
-//         bin1 = NULL;
-//     }
-//     combined = (char **)realloc(combined, combined_index * sizeof(char *));
-//     comb1.combgroup = combined;
-//     comb1.size = combined_index;
-//     return comb1;
-// }
 
 struct combination general_comb(struct combination g1, struct combination g2, StringNode *taken_node, StringNode *nottaken_node, int last_combination_of_column)
 {

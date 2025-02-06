@@ -214,7 +214,6 @@
         <child>
           <object class="GtkToggleButton" id="togglebutton">
             <property name="label" translatable="yes">Don't-Cares</property>
-            <property name="related-action"/>
             <property name="width-request">125</property>
             <property name="height-request">37</property>
             <property name="visible">True</property>
